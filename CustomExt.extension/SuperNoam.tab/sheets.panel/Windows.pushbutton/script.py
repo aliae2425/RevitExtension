@@ -42,9 +42,6 @@ for win in windows:
     else:
         print("hote de la fenetre {} ({}) non suporte".format(key_name, win.Id))
 
-# for k,v in dict_windows.items():
-#     print(k,v)
-    
 for windows_name, window in dict_windows.items():
     win_origin = window.Location.Point #type: XYZ
     
@@ -61,8 +58,15 @@ for windows_name, window in dict_windows.items():
     win_depth   = UnitUtils.ConvertToInternalUnits(40, UnitTypeId.Centimeters)
     offset      = UnitUtils.ConvertToInternalUnits(40, UnitTypeId.Centimeters)
     
-    print('-'*15)
-    print("hauteur {}".format(win_height))
-    print("largeur {}".format(win_width ))
-    print("profondeur {}".format(win_depth ))
-    print("offset {}".format(offset    ))
+    if not win_height:
+        win_height = window.Symbol.LookupParameter('FAMILY_ROUGH_HEIGHT_PARAM').AsDouble()
+        
+    
+    trans = Transform.Identity
+    trans.Origin = win_origin
+    
+    vector = vector.Normalize()
+    trans.BasisX = vector
+    trans.BasisY = XYZ.BasisZ
+    trans.BasisZ = vector.CrossProduct(XYZ.BasisZ)
+    
