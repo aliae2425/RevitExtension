@@ -16,7 +16,6 @@ __highlight__ = 'new'
 import os
 from Autodesk.Revit.DB import *  
 
-
 doc   = __revit__.ActiveUIDocument.Document 
 uidoc = __revit__.ActiveUIDocument          
 app   = __revit__.Application               
@@ -25,7 +24,6 @@ active_view  = doc.ActiveView
 active_level = active_view.GenLevel             
 rvt_year     = int(app.VersionNumber)           
 PATH_SCRIPT  = os.path.dirname(__file__)   
-
 
 windows = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Windows).WhereElementIsNotElementType().ToElements()
 
@@ -42,31 +40,62 @@ for win in windows:
     else:
         print("hote de la fenetre {} ({}) non suporte".format(key_name, win.Id))
 
+t = Transaction(doc, "Generation des vues")
+
+t.Start()
+
 for windows_name, window in dict_windows.items():
-    win_origin = window.Location.Point #type: XYZ
-    
-    host_wall = window.Host
-    curve = host_wall.Location.Curve
-    
-    pt_start = curve.GetEndPoint(0)
-    pt_end = curve.GetEndPoint(1)
-    
-    vector = pt_end - pt_start
-    
-    win_height  = window.Symbol.get_Parameter(BuiltInParameter.GENERIC_HEIGHT).AsDouble()
-    win_width   = window.Symbol.get_Parameter(BuiltInParameter.DOOR_WIDTH).AsDouble()
-    win_depth   = UnitUtils.ConvertToInternalUnits(40, UnitTypeId.Centimeters)
-    offset      = UnitUtils.ConvertToInternalUnits(40, UnitTypeId.Centimeters)
-    
-    if not win_height:
-        win_height = window.Symbol.LookupParameter('FAMILY_ROUGH_HEIGHT_PARAM').AsDouble()
+    try: 
+        win_origin = window.Location.Point #type: XYZ
         
+        host_wall = window.Host
+        curve = host_wall.Location.Curve
+        
+        pt_start = curve.GetEndPoint(0)
+        pt_end = curve.GetEndPoint(1)
+        
+        vector = pt_end - pt_start
+        
+        win_height  = window.Symbol.get_Parameter(BuiltInParameter.GENERIC_HEIGHT).AsDouble()
+        win_width   = window.Symbol.get_Parameter(BuiltInParameter.DOOR_WIDTH).AsDouble()
+        offset = win_depth = UnitUtils.ConvertToInternalUnits(40, UnitTypeId.Centimeters)
+        
+        if not win_height:
+            win_height = window.Symbol.LookupParameter('FAMILY_ROUGH_HEIGHT_PARAM').AsDouble()
+            
+        
+        trans = Transform.Identity
+        trans.Origin = win_origin
+        
+        vector = vector.Normalize()
+        trans.BasisX = vector
+        trans.BasisY = XYZ.BasisZ
+        trans.BasisZ = vector.CrossProduct(XYZ.BasisZ)
+
+        
+        half = win_width/2
+        section_box = BoundingBoxXYZ()
+        section_box.Min = XYZ(-half-offset, 0-offset, -win_depth)
+        section_box.Max = XYZ(half + offset, win_height+offset, win_depth)
+
+        section_box.Transform = trans
+        
+        SectionType_id = doc.GetDefaultElementTypeId(ElementTypeGroup.ViewTypeSection)
+        window_elevation = ViewSection.CreateSection(doc, SectionType_id, section_box)
+        
+        new_name = "418_{} (elevation)".format(windows_name)
+        
+        while True:
+            try:
+                window_elevation.Name = new_name
+                print("Elevation cree : {}".format(windows_name))
+                break
+            except:
+                new_name += "*"
+    except:
+        import traceback
+        print("-"*15)
+        print("Oups erreur : ")
+        print(traceback.format_exc())    
     
-    trans = Transform.Identity
-    trans.Origin = win_origin
-    
-    vector = vector.Normalize()
-    trans.BasisX = vector
-    trans.BasisY = XYZ.BasisZ
-    trans.BasisZ = vector.CrossProduct(XYZ.BasisZ)
-    
+t.Commit()
