@@ -1,5 +1,5 @@
 
-
+# ------------------------------- info pyrevit ------------------------------- #
 __title__ = "Fenetre _ template"
 __doc__ = """
     version : 0.1.1
@@ -7,14 +7,19 @@ __doc__ = """
     __________________
     un bouton pour les detailer toutes 
 """
-
 __author__ = 'Noam Carmi'                               
 __min_revit_ver__ = 2024                                       
 __max_revit_ver__ = 2024                                       
 __highlight__ = 'new'    
 
+# -------------------------------- importation ------------------------------- #
+
 import os
 from Autodesk.Revit.DB import *  
+from collections import defaultdict
+from pprint import pprint
+
+# --------------------------- init variable global --------------------------- #
 
 doc   = __revit__.ActiveUIDocument.Document 
 uidoc = __revit__.ActiveUIDocument          
@@ -23,7 +28,117 @@ app   = __revit__.Application
 active_view  = doc.ActiveView                   
 active_level = active_view.GenLevel             
 rvt_year     = int(app.VersionNumber)           
-PATH_SCRIPT  = os.path.dirname(__file__)   
+PATH_SCRIPT  = os.path.dirname(__file__) 
+
+titlebloc_id = doc.GetDefaultFamilyTypeId(ElementId(BuiltInCategory.OST_TitleBlocks))
+
+
+
+# ------------------------- def fonction create View ------------------------- #
+
+def createView(section_box, transform, name, type):
+    section_box.Transform = transform
+    
+    SectionType_id = doc.GetDefaultElementTypeId(ElementTypeGroup.ViewTypeSection)
+    window_elevation = ViewSection.CreateSection(doc, SectionType_id, section_box)
+    
+    new_name = "418_{} ({})".format(name, type)
+    
+    while True:
+        try:
+            window_elevation.Name = new_name
+            print("{} cree : {}".format(type, name))
+            break
+        except:
+            new_name += "-copy"
+
+def TransVector(Origin, X,Y,Z):
+    trans = Transform.Identity
+    trans.Origin = Origin
+    
+    trans.BasisX = X
+    trans.BasisY = Y
+    trans.BasisZ = Z
+    
+    return trans
+    
+def createElevation(origine, vector, offset, name):
+    vector = vector.Normalize()
+
+    half = win_width/2
+    section_box = BoundingBoxXYZ()
+    section_box.Min = XYZ(-half-offset, 0-offset, -offset)
+    section_box.Max = XYZ(half + offset, win_height+offset, offset)
+
+    trans = TransVector(origine, vector, XYZ.BasisZ, vector.CrossProduct(XYZ.BasisZ))
+
+    createView(section_box, trans, name, "elevation")
+   
+def createCrossSection(origine, vector, offset , name):
+    vector = vector.Normalize()
+    
+    half = win_width/2
+    section_box = BoundingBoxXYZ()
+    section_box.Min = XYZ(-half-offset, 0-offset, -offset)
+    section_box.Max = XYZ(half + offset, win_height+offset, offset)
+
+    vector_cross = vector.CrossProduct(XYZ.BasisZ)
+    trans = TransVector(origine, vector_cross, XYZ.BasisZ, vector_cross.CrossProduct(XYZ.BasisZ))
+    
+    createView(section_box, trans, name, "coupe")
+
+def createPlan(origine, vector, offset, name):
+    vector = vector.Normalize()
+
+    trans = TransVector(origine, vector, XYZ.BasisZ.CrossProduct(vector), XYZ.BasisZ)
+
+    half = win_width/2
+    section_box = BoundingBoxXYZ()
+    section_box.Min = XYZ(-half-offset, 0-offset, offset)
+    section_box.Max = XYZ(half + offset, win_height+offset, offset*2)
+
+    createView(section_box, trans, name, "plan")
+    
+
+# ------------------------- def function create sheet ------------------------ #
+
+def MiseEnPage():
+    all_views = FilteredElementCollector(doc).OfClass(View).WhereElementIsNotElementType().ToElements()
+    view_to_use = [view for view in all_views if "418" in view.Name]
+
+    dict_views = defaultdict(dict)
+    
+    for view in view_to_use:
+        try:
+            view_name = view.Name.replace('418_','').split(' (')[0]
+            
+            curent = ''
+            for idx in range(view.Name.index('(')  + len('(') + 1, view.Name.index(")")):
+                curent = curent + view.Name[idx]
+            
+            dict_views[view_name][curent] = view
+            
+        except:
+            pass
+    
+
+    for win_name, dict_win_views in dict_views.items():
+        createsheet(win_name, dict_win_views)
+        
+def createsheet(win_name, dict_win_views):
+    new_sheet = ViewSheet.Create(doc, titlebloc_id)
+   
+    pt_plan = XYZ(0.5,.35,0)
+    pt_Cross = XYZ(0.25,0.35,0)
+    pt_Elev = XYZ(0.5,0.46,0)
+    
+    # vp_plan = Viewport.Create(doc, new_sheet.Id, dict_win_views["plan"].Id, pt_plan)
+    # vp_plan = Viewport.Create(doc, new_sheet.Id, dict_win_views["coupe"].Id, pt_Cross)
+    # vp_plan = Viewport.Create(doc, new_sheet.Id, dict_win_views["elevation"].Id, pt_Elev)
+    
+    
+    
+# ----------------------------------- main ----------------------------------- #
 
 windows = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Windows).WhereElementIsNotElementType().ToElements()
 
@@ -46,56 +161,30 @@ t.Start()
 
 for windows_name, window in dict_windows.items():
     try: 
-        win_origin = window.Location.Point #type: XYZ
-        
+        win_origin = window.Location.Point 
         host_wall = window.Host
         curve = host_wall.Location.Curve
         
-        pt_start = curve.GetEndPoint(0)
-        pt_end = curve.GetEndPoint(1)
-        
-        vector = pt_end - pt_start
+        vector = curve.GetEndPoint(0) - curve.GetEndPoint(1)
         
         win_height  = window.Symbol.get_Parameter(BuiltInParameter.GENERIC_HEIGHT).AsDouble()
         win_width   = window.Symbol.get_Parameter(BuiltInParameter.DOOR_WIDTH).AsDouble()
         offset = win_depth = UnitUtils.ConvertToInternalUnits(40, UnitTypeId.Centimeters)
-        
         if not win_height:
             win_height = window.Symbol.LookupParameter('FAMILY_ROUGH_HEIGHT_PARAM').AsDouble()
-            
         
-        trans = Transform.Identity
-        trans.Origin = win_origin
+        print("-"*25)
+        createElevation(win_origin,vector, offset, windows_name)
+        createCrossSection(win_origin,vector,win_width/2,windows_name)
+        createPlan(win_origin,vector,win_width/2,windows_name)
         
-        vector = vector.Normalize()
-        trans.BasisX = vector
-        trans.BasisY = XYZ.BasisZ
-        trans.BasisZ = vector.CrossProduct(XYZ.BasisZ)
-
-        
-        half = win_width/2
-        section_box = BoundingBoxXYZ()
-        section_box.Min = XYZ(-half-offset, 0-offset, -win_depth)
-        section_box.Max = XYZ(half + offset, win_height+offset, win_depth)
-
-        section_box.Transform = trans
-        
-        SectionType_id = doc.GetDefaultElementTypeId(ElementTypeGroup.ViewTypeSection)
-        window_elevation = ViewSection.CreateSection(doc, SectionType_id, section_box)
-        
-        new_name = "418_{} (elevation)".format(windows_name)
-        
-        while True:
-            try:
-                window_elevation.Name = new_name
-                print("Elevation cree : {}".format(windows_name))
-                break
-            except:
-                new_name += "*"
     except:
         import traceback
         print("-"*15)
         print("Oups erreur : ")
         print(traceback.format_exc())    
     
+print("# ----------------------------- getview ----------------------------- #")
+MiseEnPage()
+
 t.Commit()
