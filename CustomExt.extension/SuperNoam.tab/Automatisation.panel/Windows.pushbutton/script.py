@@ -10,7 +10,7 @@ __doc__ = """
 __author__ = 'Noam Carmi'                               
 __min_revit_ver__ = 2024                                       
 __max_revit_ver__ = 2024                                       
-__highlight__ = 'new'    
+__highlight__ = 'updated'    
 
 # -------------------------------- importation ------------------------------- #
 
@@ -35,11 +35,27 @@ titlebloc_id = doc.GetDefaultFamilyTypeId(ElementId(BuiltInCategory.OST_TitleBlo
 
 
 # ------------------------- def fonction create View ------------------------- #
+def AlreadyExist(tab, Name):
+	flag = False
+	viewSection = ''
+	for i in tab:
+		if i.Name == Name:
+			flag = True
+			viewSection = i
+	return flag, viewSection
 
 def createView(section_box, transform, name, type):
     section_box.Transform = transform
     
     SectionType_id = doc.GetDefaultElementTypeId(ElementTypeGroup.ViewTypeSection)
+    Coupe_Types = FilteredElementCollector(doc).OfClass(ViewFamilyType).ToElements()
+    # result, viewSection = AlreadyExist(Coupe_Types, "418_details")
+    
+    # if result : 
+    #     Section = viewSection
+    # else:
+    #     Section = SectionType_id.Duplicate("418_Details")
+    
     window_elevation = ViewSection.CreateSection(doc, SectionType_id, section_box)
     
     new_name = "418_{} ({})".format(name, type)
@@ -99,6 +115,26 @@ def createPlan(origine, vector, offset, name):
 
     createView(section_box, trans, name, "plan")
     
+def createViewOfType(origine, vector, offset, name, type):
+    vector = vector.Normalize()
+
+    half = win_width/2
+    section_box = BoundingBoxXYZ()
+    section_box.Min = XYZ(-half-offset, 0-offset, -offset)
+    section_box.Max = XYZ(half + offset, win_height+offset, offset)
+
+    if type == "elevation":
+        trans = TransVector(origine, vector, XYZ.BasisZ, vector.CrossProduct(XYZ.BasisZ))
+    elif type == "plan":
+        trans = TransVector(origine, vector, XYZ.BasisZ.CrossProduct(vector), XYZ.BasisZ)
+    elif type == "coupe":
+        vector_cross = vector.CrossProduct(XYZ.BasisZ)
+        trans = TransVector(origine, vector_cross, XYZ.BasisZ, vector_cross.CrossProduct(XYZ.BasisZ))
+    else:
+        raise ValueError("Invalid view type")
+
+    createView(section_box, trans, name, type)
+
 
 # ------------------------- def function create sheet ------------------------ #
 
@@ -142,11 +178,11 @@ def createsheet(win_name, dict_win_views, ite):
         Viewport.CanAddViewToSheet(doc, new_sheet.Id, dict_win_views["coupe"].Id) and \
         Viewport.CanAddViewToSheet(doc, new_sheet.Id, dict_win_views["elevation"].Id) :
                                   
-            vp_plan = Viewport.Create(doc, new_sheet.Id, dict_win_views["plan"].Id, pt_plan)
-            vp_plan = Viewport.Create(doc, new_sheet.Id, dict_win_views["coupe"].Id, pt_Cross)
-            vp_plan = Viewport.Create(doc, new_sheet.Id, dict_win_views["elevation"].Id, pt_Elev)
+            # vp_plan = Viewport.Create(doc, new_sheet.Id, dict_win_views["plan"].Id, pt_plan)
+            # vp_plan = Viewport.Create(doc, new_sheet.Id, dict_win_views["coupe"].Id, pt_Cross)
+            # vp_plan = Viewport.Create(doc, new_sheet.Id, dict_win_views["elevation"].Id, pt_Elev)
             
-            print("feuille pour {} crée".format(win_name))
+            print("feuille pour {} cree".format(win_name))
             
             try:
                 new_sheet.SheetNumber = "418_detail_{}".format(ite)
@@ -158,14 +194,13 @@ def createsheet(win_name, dict_win_views, ite):
     else:
         st.RollBack()
         print("erreur : {} deja presente dans une feuille ".format(win_name))
-    
-    
-    
+        
 # ----------------------------------- main ----------------------------------- #
 
 windows = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Windows).WhereElementIsNotElementType().ToElements()
 
 dict_windows = {}
+
 
 for win in windows:
     family_name = win.Symbol.Family.Name
@@ -197,9 +232,14 @@ for windows_name, window in dict_windows.items():
             win_height = window.Symbol.LookupParameter('FAMILY_ROUGH_HEIGHT_PARAM').AsDouble()
         
         print("-"*25)
-        createElevation(win_origin,vector, offset, windows_name)
-        createCrossSection(win_origin,vector,win_width/2,windows_name)
-        createPlan(win_origin,vector,win_width/2,windows_name)
+        
+        createViewOfType(win_origin, vector, offset, windows_name, "elevation")
+        createViewOfType(win_origin, vector, offset, windows_name, "plan")
+        createViewOfType(win_origin, vector, offset, windows_name, "coupe")
+        
+        # createElevation(win_origin,vector, offset, windows_name)
+        # createCrossSection(win_origin,vector,win_width/2,windows_name)
+        # createPlan(win_origin,vector,win_width/2,windows_name)
         
     except:
         import traceback
