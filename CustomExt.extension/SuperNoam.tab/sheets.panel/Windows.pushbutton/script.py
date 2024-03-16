@@ -113,7 +113,7 @@ def MiseEnPage():
             view_name = view.Name.replace('418_','').split(' (')[0]
             
             curent = ''
-            for idx in range(view.Name.index('(')  + len('(') + 1, view.Name.index(")")):
+            for idx in range(view.Name.index('(')-1 + len('(') + 1, view.Name.index(")")):
                 curent = curent + view.Name[idx]
             
             dict_views[view_name][curent] = view
@@ -121,20 +121,43 @@ def MiseEnPage():
         except:
             pass
     
-
+    i=0
     for win_name, dict_win_views in dict_views.items():
-        createsheet(win_name, dict_win_views)
+        createsheet(win_name, dict_win_views, i)
+        print("{} _ {}".format(win_name, dict_win_views))
+        i+=1
         
-def createsheet(win_name, dict_win_views):
+        
+def createsheet(win_name, dict_win_views, ite):
     new_sheet = ViewSheet.Create(doc, titlebloc_id)
    
     pt_plan = XYZ(0.5,.35,0)
     pt_Cross = XYZ(0.25,0.35,0)
     pt_Elev = XYZ(0.5,0.46,0)
+
+    st = SubTransaction(doc)
+    st.Start
     
-    # vp_plan = Viewport.Create(doc, new_sheet.Id, dict_win_views["plan"].Id, pt_plan)
-    # vp_plan = Viewport.Create(doc, new_sheet.Id, dict_win_views["coupe"].Id, pt_Cross)
-    # vp_plan = Viewport.Create(doc, new_sheet.Id, dict_win_views["elevation"].Id, pt_Elev)
+    if Viewport.CanAddViewToSheet(doc, new_sheet.Id, dict_win_views["plan"].Id) and \
+        Viewport.CanAddViewToSheet(doc, new_sheet.Id, dict_win_views["coupe"].Id) and \
+        Viewport.CanAddViewToSheet(doc, new_sheet.Id, dict_win_views["elevation"].Id) :
+                                  
+            vp_plan = Viewport.Create(doc, new_sheet.Id, dict_win_views["plan"].Id, pt_plan)
+            vp_plan = Viewport.Create(doc, new_sheet.Id, dict_win_views["coupe"].Id, pt_Cross)
+            vp_plan = Viewport.Create(doc, new_sheet.Id, dict_win_views["elevation"].Id, pt_Elev)
+            
+            print("feuille pour {} crée".format(win_name))
+            
+            try:
+                new_sheet.SheetNumber = "418_detail_{}".format(ite)
+                new_sheet.Name = '{}'.format(win_name)
+            except: 
+                pass
+            
+            st.Commit()
+    else:
+        st.RollBack()
+        print("erreur : {} deja presente dans une feuille ".format(win_name))
     
     
     
