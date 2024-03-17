@@ -1,13 +1,13 @@
 
 # ------------------------------- info pyrevit ------------------------------- #
-__title__ = "Fenetre _ template"
+__title__ = "Detailer les fenetres"
 __doc__ = """
     version : 0.1.1
     Date : 03.03.2024
     __________________
     un bouton pour les detailer toutes 
 """
-__author__ = 'Noam Carmi'                               
+__author__ = 'Aliae'                               
 __min_revit_ver__ = 2024                                       
 __max_revit_ver__ = 2024                                       
 __highlight__ = 'updated'    
