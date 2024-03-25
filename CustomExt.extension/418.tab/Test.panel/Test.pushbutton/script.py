@@ -1,3 +1,0 @@
-import RvtFilterSelection
-
-merde.printStatement()
