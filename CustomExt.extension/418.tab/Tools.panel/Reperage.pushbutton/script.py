@@ -7,6 +7,12 @@ __doc__ = """
     Date : 24.03.2024
     __________________
     Récupère les vues de type plan de repérage et les renomme en fonction de la feuille sur laquelle elles se trouvent ainsi que crée un filtre limitant les coupes affiché a celle dans la feuille
+
+    __________________
+    Shift-Click:
+
+    Affiche la fenêtre de configuration pour le type de plan de repérage
+
 """
 __authors__ = [
     'Aliae',
