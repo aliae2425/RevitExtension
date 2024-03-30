@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-
-from teapot import Statement
-
-
-params = Statement()
-Statement.printStatement()
+__author__ = 'Aliae'                               
+__min_revit_ver__ = 2024                                       
+__max_revit_ver__ = 2024                                       
+__highlight__ = 'updated'
+__beta__ = True    
