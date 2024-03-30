@@ -56,13 +56,13 @@ def userConfig_ID(doc):
     try:
         # check if the section exist
         user_config.add_section('localplan')
-        ID_TYPE_PLAN_REPERAGE = user_config.localplan.id = selectFloorType(doc).ToString()
+        ID_TYPE_PLAN_REPERAGE = user_config.localplan.id = int(selectFloorType(doc).ToString())
         user_config.save_changes()
         
     except:
         # look if the section exist and the id is set
         if user_config.localplan.get_option('id', "") == "":
-            ID_TYPE_PLAN_REPERAGE = user_config.localplan.id = selectFloorType(doc).ToString()
+            ID_TYPE_PLAN_REPERAGE = user_config.localplan.id = int(selectFloorType(doc).ToString())
             user_config.save_changes()
         # get the id from the config file
         else :
