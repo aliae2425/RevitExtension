@@ -7,6 +7,12 @@ __doc__ = """
     Date : 24.03.2024
     __________________
     Récupère les vues de type plan de repérage et les renomme en fonction de la feuille sur laquelle elles se trouvent ainsi que crée un filtre limitant les coupes affiché a celle dans la feuille
+
+    __________________
+    Shift-Click:
+
+    Affiche la fenêtre de configuration pour le type de plan de repérage
+
 """
 __authors__ = [
     'Aliae',
@@ -14,10 +20,12 @@ __authors__ = [
 ]
 __min_revit_ver__ = 2024                                       
 __max_revit_ver__ = 2024                                       
-__highlight__ = 'new'
+__highlight__ = 'updated'
 __beta__ = False
 
 
+from pyrevit.userconfig import user_config
+from pyrevit import script, forms
 from pyrevit import DB, HOST_APP, UI, revit, script
 from pyrevit.forms import alert
 from pyrevit.framework import List
@@ -28,15 +36,59 @@ new_doc = revit.DOCS.doc
 uidoc = __revit__.ActiveUIDocument
 app   = __revit__.Application
 
-ID_TYPE_PLAN_REPERAGE = "261345"
+# ID_TYPE_PLAN_REPERAGE = "261345"
 LABEL_PLAN = "418_PDR_{}"
 LABEL_FILTER = "418_PDR_S{}"
 
+def get_floorPlan(doc):
+    return DB.FilteredElementCollector(doc).OfClass(DB.ViewPlan).ToElements()
+
+def selectFloorType(doc):
+    ops = []
+    floorPlantype = {}
+
+    for section in get_floorPlan(doc):
+        if section.GetTypeId() not in floorPlantype:
+            if section.GetTypeId().ToString() != '-1':
+                # floorPlantype[section.GetTypeId().ToString()] = DB.Element.Name.__get__(activ_document.GetElement(section.GetTypeId()))
+                floorPlantype[DB.Element.Name.__get__(doc.GetElement(section.GetTypeId()))] = section.GetTypeId()
+
+    for key, value in floorPlantype.items():
+        ops.append(key)
+
+    return( floorPlantype[forms.CommandSwitchWindow.show(ops, message='Selectionner le type plan de niveau')])
+
+def userConfig_ID(doc):
+    try:
+        # check if the section exist
+        user_config.add_section('localplan')
+        ID_TYPE_PLAN_REPERAGE = user_config.localplan.id = int(selectFloorType(doc).ToString())
+        user_config.save_changes()
+        
+    except:
+        # look if the section exist and the id is set
+        if user_config.localplan.get_option('id', "") == "":
+            ID_TYPE_PLAN_REPERAGE = user_config.localplan.id = int(selectFloorType(doc).ToString())
+            user_config.save_changes()
+        # get the id from the config file
+        else :
+            ID_TYPE_PLAN_REPERAGE = user_config.localplan.get_option('id', "")
+    # check if the id is still valid
+    if not activ_document.GetElement(DB.ElementId(ID_TYPE_PLAN_REPERAGE)):
+        ID_TYPE_PLAN_REPERAGE = user_config.localplan.id = selectFloorType(doc).ToString()
+        user_config.save_changes()
+        
+    return ID_TYPE_PLAN_REPERAGE
+
 def get_section(doc):
     return [section for section in DB.FilteredElementCollector(doc).OfCategory(DB.BuiltInCategory.OST_Views).ToElements() if section.ViewType.ToString() == "Section"]
+
 def dispose_filters(doc):
     return [filter for filter in DB.FilteredElementCollector(doc).OfClass(DB.FilterElement).ToElements() if filter.Name.startswith("418_PDR_S")]
 
+ID_TYPE_PLAN_REPERAGE = str(userConfig_ID(activ_document))
+
+# print(ID_TYPE_PLAN_REPERAGE, type(ID_TYPE_PLAN_REPERAGE))
 
 sheets =  DB.FilteredElementCollector(activ_document).OfClass(DB.ViewSheet).ToElements()
 
