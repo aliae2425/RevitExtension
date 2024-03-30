@@ -82,7 +82,7 @@ def dispose_filters(doc):
 
 ID_TYPE_PLAN_REPERAGE = str(userConfig_ID(activ_document))
 
-print(ID_TYPE_PLAN_REPERAGE, type(ID_TYPE_PLAN_REPERAGE))
+# print(ID_TYPE_PLAN_REPERAGE, type(ID_TYPE_PLAN_REPERAGE))
 
 sheets =  DB.FilteredElementCollector(activ_document).OfClass(DB.ViewSheet).ToElements()
 
