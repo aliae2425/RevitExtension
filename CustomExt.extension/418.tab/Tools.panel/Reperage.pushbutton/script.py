@@ -3,8 +3,8 @@
 #! python3
 __title__ = 'Plan de repérage'
 __doc__ = """
-    version : 0.1.0
-    Date : 24.03.2024
+    version : 0.1.5
+    Date : 30.03.2024
     __________________
     Récupère les vues de type plan de repérage et les renomme en fonction de la feuille sur laquelle elles se trouvent ainsi que crée un filtre limitant les coupes affiché a celle dans la feuille
 """
