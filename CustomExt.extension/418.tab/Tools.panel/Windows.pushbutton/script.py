@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 # ------------------------------- info pyrevit ------------------------------- #
 __title__ = "Detailer les fenetres"
