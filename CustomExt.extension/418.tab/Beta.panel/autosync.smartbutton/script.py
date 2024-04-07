@@ -17,7 +17,7 @@ from pyrevit import script, forms
 from pyrevit.userconfig import user_config
 
 doc = revit.doc
-
+logger = script.get_logger()
 
 AUTO_SYNC_ENV_VAR = 'AUTOSYNCACTIVE'
 LAST_SYNC = 'DateTime_last_sync'
@@ -55,35 +55,37 @@ def userConfigTimer():
 def toggle_state():
     """Toggle tool state"""
     new_state = not script.get_envvar(AUTO_SYNC_ENV_VAR)
-    print("new_state : {}".format(new_state))
+    logger.info("new_state : {}".format(new_state))
     # remove last datafile on start
     script.set_envvar(AUTO_SYNC_ENV_VAR, new_state)
     # script.set_envvar(LAST_SYNC, datetime.datetime.now())
     script.toggle_icon(new_state)
-    echo()
 
-def echo():
+def echo(sender, args):
     """Echo tool state"""
-    timer = script.get_envvar(LAST_SYNC)
-    duration = datetime.datetime.now() - timer
-    print(duration.total_seconds())
-
+    try :
+        timer = script.get_envvar(LAST_SYNC)
+        duration = datetime.datetime.now() - timer
+        logger.info(duration.total_seconds())
+    except Exception as e:
+        logger.info(e)
+    
 
 def __selfinit__(script_cmp, ui_button_cmp, __rvt__):
     """pyRevit smartbuttom init"""
     script.set_envvar(LAST_SYNC, datetime.datetime.now())
-    print("init at : {}".format(datetime.datetime.now()))
-
-    print("-"*25)
+    logger.info("init at : {}".format(datetime.datetime.now()))
+    logger.info("-"*25)
     try:
+        __rvt__.ViewActivating += \
+            framework.EventHandler[
+                UI.Events.ViewActivatingEventArgs](echo)
         __rvt__.ViewActivated += \
             framework.EventHandler[
                 UI.Events.ViewActivatedEventArgs](echo)
         return True
     except Exception:
-        print("Failed to initialize autosync")
-        return False
-    
+        logger.info("Failed to initialize the tool.")
 
 
 
