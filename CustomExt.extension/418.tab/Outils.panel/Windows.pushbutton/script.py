@@ -14,34 +14,32 @@ __max_revit_ver__ = 2025
 
 
 from Autodesk.Revit.DB import *
-from pyrevit import forms
+from pyrevit import forms, revit, DB
 
 
 activ_document   = __revit__.ActiveUIDocument.Document
 
+pyDoc = revit.DOCS.doc
 uidoc = __revit__.ActiveUIDocument
 doc = __revit__.ActiveUIDocument.Document
 app = __revit__.Application
 
-
+OFFSET = 40
 
 class Menuiserie:
     
     def __init__(self, obj):
         self.name = obj.Name
-        self.category = obj.Category.Name
+        self.ctg = obj.Category.Name
         self.origin = obj.Location.Point
         self.vector = obj.Host.Location.Curve.GetEndPoint(0) - obj.Host.Location.Curve.GetEndPoint(1)
-        
         self.height = self.setHeight(obj)
         self.width = self.setWidth(obj)
-        self.offset = self.depth = UnitUtils.ConvertFromInternalUnits(40, UnitTypeId.Centimeters)
-        
-        self.element = obj
-
+        self.offset = UnitUtils.ConvertToInternalUnits(OFFSET, UnitTypeId.Centimeters)
+        self.box = BoundingBoxXYZ()
+        self.trans = Transform.Identity
     def __repr__(self):
-        return "menuiserie : {} \n hauteur : {} \n largeur : {} \n".format(self.name, self.height, self.width)
-
+        return "Menuiserie : {} \n\t- hauteur : {} \n\t- largeur : {} \n\t- origine : {}".format(self.name, self.height, self.width, self.origin)
     def setWidth(self, obj):
         value = obj.Symbol.get_Parameter(BuiltInParameter.DOOR_WIDTH).AsDouble()
         if value:
@@ -53,27 +51,69 @@ class Menuiserie:
         if value:
             return value
         else:
-            print("❌ la famille n'a pas de parametre de hauteur standard")
-            
-    def ScopBox(self):
-        print(self.element)
-
+            print("❌ la famille n'a pas de parametre de hauteur standard")  
+    def VectorTransform(self, viewType):
+        self.trans.Origin = self.origin
+        vector = self.vector.Normalize()
+        if viewType != "section":
+            self.trans.BasisX = vector
+        else:
+            self.trans.BasisX = vector.CrossProduct(XYZ.BasisZ)
         
-
+        if viewType == "plan":
+            self.trans.BasisY = -XYZ.BasisZ.CrossProduct(vector) 
+        else:
+            self.trans.BasisY = XYZ.BasisZ
+        
+        if viewType == "elevation":
+                self.trans.BasisZ = vector.CrossProduct(XYZ.BasisZ)
+        elif viewType == "section":
+                self.trans.BasisZ = vector.CrossProduct(XYZ.BasisZ).CrossProduct(XYZ.BasisZ)
+        elif viewType == "plan":
+                self.trans.BasisZ = -XYZ.BasisZ
+        else:
+                print("❌ type de vue non reconnu")               
+    def scopeBox(self, type):
+        self.box.Min = XYZ(  -self.width/2-self.offset,      -self.offset,               -self.offset/2 )
+        if type == "plan":
+            self.box.Min = XYZ(  -self.width/2-self.offset,      -self.offset,               -self.height/2 )
+            self.box.Max = XYZ(  self.width/2 + self.offset,    self.offset,  self.offset*2 )
+        else:
+            self.box.Max = XYZ(  self.width/2 + self.offset,     self.height + self.offset,  self.offset )  
+        
+        self.box.Transform = self.trans
+    def details(self):     
+        vue = ["plan", "elevation", "section"]
+        section_type_id = doc.GetDefaultElementTypeId(ElementTypeGroup.ViewTypeSection)
+        
+        for i in vue:
+            self.VectorTransform(i)
+            self.scopeBox(i)
+            view = ViewSection.CreateSection(doc, section_type_id ,self.box)
+            view.Scale = 20
+            curentName = "418_{}_{} ({})".format(self.ctg, self.name, i)
+            j=0
+            while True:
+                try: 
+                    view.Name = curentName
+                    print("✅ {} {} creer avec succes".format(i, curentName))
+                    break
+                except:
+                    curentName = curentName + " 🔎x{}".format(j)
+                    j+=1
+    
 def getAllElement(category):
     return FilteredElementCollector(doc).OfCategory(category).WhereElementIsNotElementType().ToElements()
-
 def FormSelector():
     ops = ["Porte", "Fenetre"]
     floorPlantype = {"Porte": BuiltInCategory.OST_Doors, "Fenetre": BuiltInCategory.OST_Windows}
-
-
     return( floorPlantype[forms.CommandSwitchWindow.show(ops, message='Selectionner le type de menuiserie')])
+
+
 
 if __name__ == "__main__":
    
     mainDict = {}
-   
     # -------------------------- filter element on wall -------------------------- #
     for i in getAllElement(FormSelector()):
        key = "{}-{}".format(i.Symbol.Family.Name, Element.Name.GetValue(i.Symbol))
@@ -83,8 +123,11 @@ if __name__ == "__main__":
            print("❌ L'element {} n'est pas sur un mur ({})".format(key, i.Id))
     
     # ------------------------- detailler les Menuiserie ------------------------- #
-
-    for key, item in mainDict.items():
-        print("🔧 Detailer l'element : {}".format(key))
-        print(Menuiserie(item))
-    
+    with revit.Transaction(doc=pyDoc, name="detailer les elements"):
+        for key, item in mainDict.items():
+            try : 
+                print("🔧 Detailer l'element : {}".format(key))
+                Menuiserie(item).details()
+            except Exception as e:
+                print("❌ Erreur lors de la création des vue de details : {}".format(e))
+        
