@@ -15,6 +15,7 @@ __max_revit_ver__ = 2025
 
 from Autodesk.Revit.DB import *
 from pyrevit import forms, revit, DB
+from collections import defaultdict
 
 
 activ_document   = __revit__.ActiveUIDocument.Document
@@ -24,10 +25,10 @@ uidoc = __revit__.ActiveUIDocument
 doc = __revit__.ActiveUIDocument.Document
 app = __revit__.Application
 
+TITLEBLOCK =  doc.GetDefaultFamilyTypeId(ElementId(BuiltInCategory.OST_TitleBlocks))
 OFFSET = 40
 
-class Menuiserie:
-    
+class Menuiserie:    
     def __init__(self, obj):
         self.name = obj.Name
         self.ctg = obj.Category.Name
@@ -91,7 +92,7 @@ class Menuiserie:
             self.scopeBox(i)
             view = ViewSection.CreateSection(doc, section_type_id ,self.box)
             view.Scale = 20
-            curentName = "418_{}_{} ({})".format(self.ctg, self.name, i)
+            curentName = "418_D_{}_{} ({})".format(self.ctg, self.name, i)
             j=0
             while True:
                 try: 
@@ -101,7 +102,51 @@ class Menuiserie:
                 except:
                     curentName = curentName + " 🔎x{}".format(j)
                     j+=1
+
+class MiseEnPage:
     
+    def __init__(self,name, vues):
+        self.name = name
+        self.plan = vues["plan"]
+        self.elevation = vues["elevation"]
+        self.section = vues["section"]
+        self.vues = vues
+
+    def __repr__(self):
+        return "Mise en page : \n\t- plan : {} \n\t- elevation : {} \n\t- section : {}".format(self.plan, self.elevation, self.section)
+    
+    def createSheet(self, i):
+        with SubTransaction(doc) as St:
+            sheet = ViewSheet.Create(doc, TITLEBLOCK)
+            sheet.Name = self.name
+            self.CreateUniqueSheetNum(sheet, i )
+            if self.canAddView(sheet):
+                self.addView(sheet)
+                print("📄 Feuille {} creer avec succes".format(self.name))
+            else:
+                St.RollBack()
+                print("❌ Impossible d'ajouter les vues a la feuille pour {}".format(self.name))
+    
+    def CreateUniqueSheetNum(self, sheet, i):
+        sheetNumber = 'D418_{}'.format(i)
+        while True:
+            try:
+                sheet.SheetNumber = sheetNumber
+                break
+            except:
+                sheetNumber = 'D418_{}'.format(i) + "X"
+    def canAddView(self, sheet):
+        flag = False
+        for i in self.vues:
+            flag = Viewport.CanAddViewToSheet(doc, sheet.Id, self.vues[i].Id)
+        return flag
+    
+    #TODO : créer des coordonnées dynamiques et migrée dans une boucle
+    def addView(self, sheet):
+        Plan = Viewport.Create(doc, sheet.Id, self.plan.Id, XYZ(0.24,0.77,0))
+        elevation = Viewport.Create(doc, sheet.Id, self.elevation.Id, XYZ(0.28,0.45,0))
+        section = Viewport.Create(doc, sheet.Id, self.section.Id, XYZ(0.58,0.45,0))
+
 def getAllElement(category):
     return FilteredElementCollector(doc).OfCategory(category).WhereElementIsNotElementType().ToElements()
 def FormSelector():
@@ -109,6 +154,10 @@ def FormSelector():
     floorPlantype = {"Porte": BuiltInCategory.OST_Doors, "Fenetre": BuiltInCategory.OST_Windows}
     return( floorPlantype[forms.CommandSwitchWindow.show(ops, message='Selectionner le type de menuiserie')])
 
+#TODO : ajouter la selection du type de feuille
+def SheetTypeSelector():
+    ops = ["A3", "A4"]
+    return forms.CommandSwitchWindow.show(ops, message='Selectionner le type de feuille')
 
 
 if __name__ == "__main__":
@@ -130,4 +179,21 @@ if __name__ == "__main__":
                 Menuiserie(item).details()
             except Exception as e:
                 print("❌ Erreur lors de la création des vue de details : {}".format(e))
-        
+    
+    # ------------------------- mise en page des vues ------------------------- #
+    allViews = [view for view in FilteredElementCollector(doc).OfClass(View).WhereElementIsNotElementType().ToElements() if view.Name.startswith("418_D")]
+    dictView = defaultdict(dict)
+    
+    for view in allViews:
+        try:
+            name = view.Name.replace("418_", "").split(" (")[0]
+            viewType = view.Name.split(" (")[1].split(")")[0]
+            dictView[name][viewType] = view
+        except Exception as e:
+            print("❌ Erreur lors de la recuperation des vues : {}".format(e))
+    
+    with revit.Transaction(doc=pyDoc, name="Mise en page des vues"):  
+        i = 0 
+        for item in dictView:
+            MiseEnPage(item, dictView[item]).createSheet(i)
+            i+=1
