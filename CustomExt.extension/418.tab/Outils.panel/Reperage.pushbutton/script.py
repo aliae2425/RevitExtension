@@ -18,7 +18,7 @@ __authors__ = [
     'Aliae',
     'JLo'
 ]
-__min_revit_ver__ = 2024                                       
+__min_revit_ver__ = 2021                                      
 __max_revit_ver__ = 2024                                       
 __highlight__ = 'updated'
 __beta__ = False
