@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#! python3
+#!python3
 __title__ = 'Plan de repérage'
 __doc__ = """
     version : 0.1.0
@@ -18,8 +18,8 @@ __authors__ = [
     'Aliae',
     'JLo'
 ]
-__min_revit_ver__ = 2024                                       
-__max_revit_ver__ = 2024                                       
+__min_revit_ver__ = 2021                                    
+__max_revit_ver__ = 2025                                      
 __highlight__ = 'updated'
 __beta__ = False
 
