@@ -9,7 +9,7 @@ __doc__ = """
     un bouton pour les detailer toutes 
 """
 __author__ = 'Aliae'                               
-__min_revit_ver__ = 2021                                       
+__min_revit_ver__ = 2022                                       
 __max_revit_ver__ = 2025
 
 
