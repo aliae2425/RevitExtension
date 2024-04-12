@@ -1,7 +1,7 @@
 
 # -*- coding: utf-8 -*-
 
-#! python3
+#!python3
 __title__ = 'mise a jour'
 __doc__ = """
     v0.0.1
