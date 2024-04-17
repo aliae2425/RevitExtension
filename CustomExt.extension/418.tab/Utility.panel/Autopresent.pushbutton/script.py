@@ -61,6 +61,6 @@ if __name__ == "__main__":
         for l in lvl:
             Plan = ["Travail", "Projet", "Existant"]
             for p in Plan:
-            VueTravail = DB.ViewPlan.Create(doc, planTravail[0].Id, l.Id)
-            VueProjet = DB.ViewPlan.Create(doc, DefaultType, l.Id)
-            VueExistant = DB.ViewPlan.Create(doc, DefaultType, l.Id)
+                VueTravail = DB.ViewPlan.Create(doc, planTravail[0].Id, l.Id)
+                VueProjet = DB.ViewPlan.Create(doc, DefaultType, l.Id)
+                VueExistant = DB.ViewPlan.Create(doc, DefaultType, l.Id)
