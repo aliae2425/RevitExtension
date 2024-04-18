@@ -1,0 +1,11 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AutoPresent"
+        Height="600" Width="750" 
+        MinHeight="500" MinWidth="500"
+        MaxHeight="800" MaxWidth="1000"
+        >
+
+    <TextBlock Text="AutoPresent" FontSize="20" FontWeight="Bold" Margin="10,10,10,10" />
+
+</Window>
