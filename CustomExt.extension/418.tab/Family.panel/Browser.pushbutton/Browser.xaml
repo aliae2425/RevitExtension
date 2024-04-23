@@ -20,11 +20,6 @@
       <RowDefinition Height="50"/>
     </Grid.RowDefinitions>
 
-    <!-- <Rectangle Grid.Row="0" Grid.Column="0" Fill="LightBlue" />
-    <Rectangle Grid.Row="0" Grid.Column="1" Fill="Blue" />
-    <Rectangle Grid.Row="1" Grid.Column="1" Fill="Red" />
-    <Rectangle Grid.Row="1" Grid.Column="0" Fill="Orange" />
-    <Rectangle Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Fill="Yellow" /> -->
 
     <!-- Logo and Title -->
     <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" >
@@ -41,19 +36,11 @@
     <!-- List -->
     <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Vertical" x:Name="FolderExplorer" Margin="10">
       <Separator Grid.Row="1" Grid.Column="0" Margin="10,0,10,20"/>
-      <TextBlock Text="Placeholder" FontSize="18" Margin="10,1,0,3" />
-      <TextBlock Text="Placeholder" FontSize="18" Margin="10,1,0,3" />
-      <TextBlock Text="Placeholder" FontSize="18" Margin="10,1,0,3" />
-      <TextBlock Text="Placeholder" FontSize="18" Margin="10,1,0,3" />
-      <TextBlock Text="Placeholder" FontSize="18" Margin="10,1,0,3" />
-      <TextBlock Text="Placeholder" FontSize="18" Margin="25,1,0,0" />
-      <TextBlock Text="Placeholder" FontSize="18" Margin="25,1,0,0" />
-      <TextBlock Text="Placeholder" FontSize="18" Margin="25,1,0,0" />
-      <TextBlock Text="Placeholder" FontSize="18" Margin="25,1,0,0" />
-      <TextBlock Text="Placeholder" FontSize="18" Margin="25,1,0,0" />
-      <TextBlock Text="Placeholder" FontSize="18" Margin="10,1,0,3" />
-      <TextBlock Text="Placeholder" FontSize="18" Margin="10,1,0,3" />
-      <TextBlock Text="Placeholder" FontSize="18" Margin="25,1,0,0" />
+      <ItemsControl
+        ItemsSource="{DynamicResource FolderItem}">
+
+      </ItemsControl>
+
     </StackPanel>
 
     <!-- Details -->
@@ -71,117 +58,13 @@
         <RowDefinition Height="*"/>
       </Grid.RowDefinitions>
 
-      <!-- 0 -->
-      <StackPanel Grid.Row="0" Grid.Column="3" Margin="10">
-        <StackPanel.Effect>
-          <DropShadowEffect Color="Black" ShadowDepth="5" Opacity="0.15"/>
-        </StackPanel.Effect>
-        <Image x:Name="placeholder" Source="UserControl/image.png" Height="100"/>
-      </StackPanel>
-      <StackPanel Grid.Row="0" Grid.Column="2" Margin="10">
-        <StackPanel.Effect>
-          <DropShadowEffect Color="Black" ShadowDepth="5" Opacity="0.15"/>
-        </StackPanel.Effect>
-        <Image x:Name="placeholder1" Source="UserControl/image.png" Height="100"/>
-      </StackPanel>
-      <StackPanel Grid.Row="0" Grid.Column="1" Margin="10">
-        <StackPanel.Effect>
-          <DropShadowEffect Color="Black" ShadowDepth="5" Opacity="0.15"/>
-        </StackPanel.Effect>
-        <Image x:Name="placeholder2" Source="UserControl/image.png" Height="100"/>
-      </StackPanel>
-      <StackPanel Grid.Row="0" Grid.Column="0" Margin="10">
-        <StackPanel.Effect>
-          <DropShadowEffect Color="Black" ShadowDepth="5" Opacity="0.15"/>
-        </StackPanel.Effect>
-        <Image x:Name="placeholder3" Source="UserControl/image.png" Height="100"/>
-      </StackPanel>
-
-      <!-- 1 -->
-      <StackPanel Grid.Row="1" Grid.Column="3" Margin="10">
-        <StackPanel.Effect>
-          <DropShadowEffect Color="Black" ShadowDepth="5" Opacity="0.15"/>
-        </StackPanel.Effect>
-        <Image x:Name="placeholder4" Source="UserControl/image.png" Height="100"/>
-      </StackPanel>
-      <StackPanel Grid.Row="1" Grid.Column="2" Margin="10">
-        <StackPanel.Effect>
-          <DropShadowEffect Color="Black" ShadowDepth="5" Opacity="0.15"/>
-        </StackPanel.Effect>
-        <Image x:Name="placeholder5" Source="UserControl/image.png" Height="100"/>
-      </StackPanel>
-      <StackPanel Grid.Row="1" Grid.Column="1" Margin="10">
-        <StackPanel.Effect>
-          <DropShadowEffect Color="Black" ShadowDepth="5" Opacity="0.15"/>
-        </StackPanel.Effect>
-        <Image x:Name="placeholder6" Source="UserControl/image.png" Height="100"/>
-      </StackPanel>
-      <StackPanel Grid.Row="1" Grid.Column="0" Margin="10">
-        <StackPanel.Effect>
-          <DropShadowEffect Color="Black" ShadowDepth="5" Opacity="0.15"/>
-        </StackPanel.Effect>
-        <Image x:Name="placeholder7" Source="UserControl/image.png" Height="100"/>
-      </StackPanel>
-
-      <!-- 2 -->
-      <StackPanel Grid.Row="2" Grid.Column="3" Margin="10">
-        <StackPanel.Effect>
-          <DropShadowEffect Color="Black" ShadowDepth="5" Opacity="0.15"/>
-        </StackPanel.Effect>
-        <Image x:Name="placeholder8" Source="UserControl/image.png" Height="100"/>
-      </StackPanel>
-      <StackPanel Grid.Row="2" Grid.Column="2" Margin="10">
-        <StackPanel.Effect>
-          <DropShadowEffect Color="Black" ShadowDepth="5" Opacity="0.15"/>
-        </StackPanel.Effect>
-        <Image x:Name="placeholder9" Source="UserControl/image.png" Height="100"/>
-      </StackPanel>
-      <StackPanel Grid.Row="2" Grid.Column="1" Margin="10">
-        <StackPanel.Effect>
-          <DropShadowEffect Color="Black" ShadowDepth="5" Opacity="0.15"/>
-        </StackPanel.Effect>
-        <Image x:Name="placeholder10" Source="UserControl/image.png" Height="100"/>
-      </StackPanel>
-      <StackPanel Grid.Row="2" Grid.Column="0" Margin="10">
-        <StackPanel.Effect>
-          <DropShadowEffect Color="Black" ShadowDepth="5" Opacity="0.15"/>
-        </StackPanel.Effect>
-        <Image x:Name="placeholder11" Source="UserControl/image.png" Height="100"/>
-      </StackPanel>
-
-      <!-- 3 -->
-      <StackPanel Grid.Row="3" Grid.Column="3" Margin="10">
-        <StackPanel.Effect>
-          <DropShadowEffect Color="Black" ShadowDepth="5" Opacity="0.15"/>
-        </StackPanel.Effect>
-        <Image x:Name="placeholder12" Source="UserControl/image.png" Height="100"/>
-      </StackPanel>
-      <StackPanel Grid.Row="3" Grid.Column="2" Margin="10">
-        <StackPanel.Effect>
-          <DropShadowEffect Color="Black" ShadowDepth="5" Opacity="0.15"/>
-        </StackPanel.Effect>
-        <Image x:Name="placeholder13" Source="UserControl/image.png" Height="100"/>
-      </StackPanel>
-      <StackPanel Grid.Row="3" Grid.Column="1" Margin="10">
-        <StackPanel.Effect>
-          <DropShadowEffect Color="Black" ShadowDepth="5" Opacity="0.15"/>
-        </StackPanel.Effect>
-        <Image x:Name="placeholder14" Source="UserControl/image.png" Height="100"/>
-      </StackPanel>
-      <StackPanel Grid.Row="3" Grid.Column="0" Margin="10">
-        <StackPanel.Effect>
-          <DropShadowEffect Color="Black" ShadowDepth="5" Opacity="0.15"/>
-        </StackPanel.Effect>
-        <Image x:Name="placeholder15" Source="UserControl/image.png" Height="100"/>
-      </StackPanel>
-
     </Grid>
   
 
     <!-- validation -->
     <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" >
-      <Button Content="Cancel" Width="100" Height="30" Margin="10"/>
-      <Button Content="OK" Width="100" Height="30" Margin="10"/>
+      <Button Content="Cancel" Width="100" Height="30" Margin="10"  Click="abort"/>
+      <Button Content="OK" Width="100" Height="30" Margin="10"  Click="abort"/>
     </StackPanel>
 
   </Grid>
