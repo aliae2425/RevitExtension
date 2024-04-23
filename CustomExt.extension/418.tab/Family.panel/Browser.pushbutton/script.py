@@ -46,6 +46,7 @@ class Myform(framework.Windows.Window):
         self.set_image_source(self.logo, 'Logo.png')
         self.FolderItem = test
         
+        haha = Folder[1]
         # self.set_image_source(self.placeholder, 'UserControl/image.png')
         # self.set_image_source(self.placeholder1, 'UserControl/image.png')
         # self.set_image_source(self.placeholder2, 'UserControl/image.png')
