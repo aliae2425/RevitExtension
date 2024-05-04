@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
-#! python3
+import os
+import clr
+
 from pyrevit.userconfig import user_config
 from pyrevit.forms import WPFWindow
 from pyrevit import DB, HOST_APP, UI, revit, script, forms, framework
@@ -8,20 +10,11 @@ from pyrevit import DB, HOST_APP, UI, revit, script, forms, framework
 
 activ_document   = __revit__.ActiveUIDocument.Document
 
-
-# -*- coding: utf-8 -*-
-
-
-from pyrevit import revit, forms, script
-from pyrevit import DB as DB
-
-import clr
 import wpf
 clr.AddReference('System.Windows.Forms')
 clr.AddReference('IronPython.Wpf')
-from System import Windows
 
-class Myform(framework.Windows.Window):
+class T_settings(forms.WPFWindow):
 
     def set_image_source(self, wpf_element, image_file):
         """Set source file for image element.
@@ -35,5 +28,13 @@ class Myform(framework.Windows.Window):
     def __init__(self, fileName):
         wpf.LoadComponent(self, script.get_bundle_file(fileName))
         self.set_image_source(self.logo, 'Settings.png')
+        self.libfile_tb = {}
+        self.libfile_tb.path = user_config.get_option('libBrowser', 'libfile', '')
+        
+    def pick_tlib_folder(self, sender, args):
+        """Callback method for picking destination folder for telemetry files"""
+        new_path = forms.pick_folder(owner=self)
+        if new_path:
+            self.libfile_tb.path = os.path.normpath(new_path)
 
-Myform('Settings.xaml').ShowDialog()
+T_settings('Settings.xaml').ShowDialog()
