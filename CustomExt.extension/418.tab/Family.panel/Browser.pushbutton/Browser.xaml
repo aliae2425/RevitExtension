@@ -41,6 +41,22 @@
 
       </ItemsControl>
 
+      <StackPanel Orientation="Vertical">
+        <TextBlock Text="Placeholder" FontSize="18" Margin="10,1,0,3" Foreground="OrangeRed" />
+        <TextBlock Text="Placeholder" FontSize="18" Margin="10,1,0,3" Foreground="OrangeRed" />
+        <TextBlock Text="Placeholder" FontSize="18" Margin="10,1,0,3" Foreground="OrangeRed" />
+        <TextBlock Text="Placeholder" FontSize="18" Margin="10,1,0,3" Foreground="OrangeRed" />
+        <TextBlock Text="Placeholder" FontSize="18" Margin="10,1,0,3" Foreground="OrangeRed" />
+        <TextBlock Text="Placeholder" FontSize="18" Margin="25,1,0,0" Foreground="OrangeRed" />
+        <TextBlock Text="Placeholder" FontSize="18" Margin="25,1,0,0" Foreground="OrangeRed" />
+        <TextBlock Text="Placeholder" FontSize="18" Margin="25,1,0,0" Foreground="OrangeRed" />
+        <TextBlock Text="Placeholder" FontSize="18" Margin="25,1,0,0" Foreground="OrangeRed" />
+        <TextBlock Text="Placeholder" FontSize="18" Margin="25,1,0,0" Foreground="OrangeRed" />
+        <TextBlock Text="Placeholder" FontSize="18" Margin="10,1,0,3" Foreground="OrangeRed" />
+        <TextBlock Text="Placeholder" FontSize="18" Margin="10,1,0,3" Foreground="OrangeRed" />
+        <TextBlock Text="Placeholder" FontSize="18" Margin="25,1,0,0" Foreground="OrangeRed" />
+      </StackPanel>
+    
     </StackPanel>
 
     <!-- Details -->
