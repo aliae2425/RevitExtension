@@ -4,15 +4,17 @@
         Height="750" Width="500" 
         MinHeight="500" MinWidth="500"
         MaxHeight="800" MaxWidth="1000"
+        Background="White"
         >
 
         <Grid Margin="25">
           <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="50"/>
           </Grid.RowDefinitions>
+      
 
           <StackPanel Grid.Row="0" Orientation="Horizontal">
             <Image x:Name="logo" Grid.Row="0" Source="Settings.png" Height="50" Width="50" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,5,0"/>
@@ -21,21 +23,36 @@
 
           <Separator Grid.Row="1" Margin="0,10,0,10" />
 
-          <DockPanel Grid.Row="2" Margin="0,10,0,0">
-            <TextBlock DockPanel.Dock="top" VerticalAlignment="Center" Text="Browser : Chemin d'acces à la racine de la bibliotheque" />
-            <WrapPanel DockPanel.Dock="Right" Margin="0,10,0,0">
-                <Button Content="📁"
-                        Width="48" Height="24" Margin="6,0,3,0" Padding="0,0,0,2"
-                        Click="pick_tlib_folder" ToolTip="Chemind d'acces"/>
-                <Button Content="🔎" Height="24" Margin="3,0,0,0" ToolTip="mettre a jour les dossiers"/>
-            </WrapPanel>
-            <TextBox x:Name="telemetryfile_tb" FontFamily="Consolas"
-                     Margin="0,10,0,0" Height="24" Padding="5,0,0,0"
-                     VerticalContentAlignment="Center"/>
-          </DockPanel>
+          <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
 
+            </Grid.RowDefinitions>
+              <DockPanel Grid.Row="2" Margin="0,10,0,0">
+                <TextBlock DockPanel.Dock="top" VerticalAlignment="Center" Text="Browser : Chemin d'acces à la racine de la bibliotheque" />
+                <WrapPanel DockPanel.Dock="Right" Margin="0,10,0,0">
+                    <Button Content="📁"
+                            Width="48" Height="24" Margin="6,0,3,0" Padding="0,0,0,2"
+                            Click="pick_libfile_path" ToolTip="choisir le chemin d'acces"/>
+                    <Button Click="reset_libfile_path" Content="❌" 
+                            Width="48" Height="24" Margin="6,0,3,0" Padding="0,0,0,2"
+                            ToolTip="reset le chemin d'acces"/>
+                    <Button Click="compute_libfile_path" Content="🧾" 
+                            Width="48" Height="24" Margin="6,0,3,0" Padding="0,0,0,2"
+                            ToolTip="reset le chemin d'acces"/>
+                </WrapPanel>
+                <TextBox x:Name="libfile_path" FontFamily="Consolas"
+                         Margin="0,10,0,0" Height="24" Padding="5,0,0,0"
+                         VerticalContentAlignment="Center"/>
+              </DockPanel>
+          </Grid>
+
+
+          
+          <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" >
+            <Button Content="Fermer" Width="100" Height="30" Margin="10"  Click="close_settings"/>
+          </StackPanel>
         </Grid>
-
+        
 
 
 </Window>

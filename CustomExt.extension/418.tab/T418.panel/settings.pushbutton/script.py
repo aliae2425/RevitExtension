@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import os
+import os,io
 import clr
+import json
+import subprocess
 
 from pyrevit.userconfig import user_config
 from pyrevit.forms import WPFWindow
@@ -28,13 +30,57 @@ class T_settings(forms.WPFWindow):
     def __init__(self, fileName):
         wpf.LoadComponent(self, script.get_bundle_file(fileName))
         self.set_image_source(self.logo, 'Settings.png')
-        self.libfile_tb = {}
-        self.libfile_tb.path = user_config.get_option('libBrowser', 'libfile', '')
+        try:
+            self.libfile_path.Text = user_config.libfile.get_option('path', '')
+        except:
+            self.libfile_path.Text = ''
+            
         
-    def pick_tlib_folder(self, sender, args):
+    
+    def pick_libfile_path(self, sender, args):
         """Callback method for picking destination folder for telemetry files"""
         new_path = forms.pick_folder(owner=self)
         if new_path:
-            self.libfile_tb.path = os.path.normpath(new_path)
+            self.libfile_path.Text = os.path.normpath(new_path)
+        self.save_settings()
+    
+    def reset_libfile_path(self, sender, args):
+        self.libfile_path.Text = ''
+    
+    def compute_libfile_path(self, sender, args):
+        print('compute_libfile_path')
+        if not self.libfile_path.Text:
+            forms.alert('Please select a folder for the library file.', exitscript=True)
+        else : 
+            path = os.path.join(self.libfile_path.Text, 'libfile.json')
+            jfile = self.path_to_dict(path=self.libfile_path.Text)
+            print(jfile)
+            with io.open(path, 'w', encoding='utf8') as f:
+                json.dump(self.path_to_dict(path=self.libfile_path.Text), f, ensure_ascii=False)
+                # f.write(json.dumps(self.path_to_dict(path=self.libfile_path.Text)))
+            # subprocess.run(["attrib","+H",path],check=True)
+        
+    def path_to_dict(self, path):
+        d = {'name': os.path.basename(path)}
+        if os.path.isdir(path):
+            d['type'] = "directory"
+            d['children'] = [self.path_to_dict(os.path.join(path,x)) for x in os.listdir(path)]
+        else:
+            d['type'] = "file"
+        return d
+    
+    def save_settings(self, sender, args):
+        try :
+            user_config.add_section('libfile')
+        except Exception as e:
+            pass      
+        try:
+            user_config.libfile.path = self.libfile_path.Text
+            user_config.save_changes()
+        except Exception as e:
+            forms.alert('Error saving settings: {}'.format(e), exitscript=True)
+            
+    def close_settings(self, sender, args):
+        self.Close()
 
 T_settings('Settings.xaml').ShowDialog()
