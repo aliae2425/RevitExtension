@@ -36,9 +36,9 @@
                     <Button Click="reset_libfile_path" Content="❌" 
                             Width="48" Height="24" Margin="6,0,3,0" Padding="0,0,0,2"
                             ToolTip="reset le chemin d'acces"/>
-                    <Button Click="compute_libfile_path" Content="🧾" 
+                    <!-- <Button Click="compute_libfile_path" Content="🧾" 
                             Width="48" Height="24" Margin="6,0,3,0" Padding="0,0,0,2"
-                            ToolTip="reset le chemin d'acces"/>
+                            ToolTip="créer la librairie"/> -->
                 </WrapPanel>
                 <TextBox x:Name="libfile_path" FontFamily="Consolas"
                          Margin="0,10,0,0" Height="24" Padding="5,0,0,0"

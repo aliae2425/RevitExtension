@@ -35,31 +35,28 @@ class T_settings(forms.WPFWindow):
         except:
             self.libfile_path.Text = ''
             
-        
-    
     def pick_libfile_path(self, sender, args):
         """Callback method for picking destination folder for telemetry files"""
         new_path = forms.pick_folder(owner=self)
         if new_path:
             self.libfile_path.Text = os.path.normpath(new_path)
         self.save_settings()
+        self.compute_libfile_path()
     
     def reset_libfile_path(self, sender, args):
         self.libfile_path.Text = ''
         self.save_settings()
     
-    def compute_libfile_path(self, sender, args):
+    def compute_libfile_path(self):
         print('compute_libfile_path')
         if not self.libfile_path.Text:
             forms.alert('Please select a folder for the library file.', exitscript=True)
         else : 
             path = os.path.join(self.libfile_path.Text, 'libfile.json')
-            jfile = self.path_to_dict(path=self.libfile_path.Text)
-            print(jfile)
-            with io.open(path, 'w', encoding='utf8') as f:
-                json.dump(self.path_to_dict(path=self.libfile_path.Text), f, ensure_ascii=False)
-                # f.write(json.dumps(self.path_to_dict(path=self.libfile_path.Text)))
-            # subprocess.run(["attrib","+H",path],check=True)
+            if os.path.exists(path):
+                with io.open(path, 'w', encoding='utf8') as f:
+                    json.dump(self.path_to_dict(path=self.libfile_path.Text), f, ensure_ascii=False)
+
         
     def path_to_dict(self, path):
         d = {'name': os.path.basename(path)}
