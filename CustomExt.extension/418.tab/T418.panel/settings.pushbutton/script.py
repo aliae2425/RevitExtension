@@ -46,6 +46,7 @@ class T_settings(forms.WPFWindow):
     
     def reset_libfile_path(self, sender, args):
         self.libfile_path.Text = ''
+        self.save_settings()
     
     def compute_libfile_path(self, sender, args):
         print('compute_libfile_path')
@@ -69,7 +70,7 @@ class T_settings(forms.WPFWindow):
             d['type'] = "file"
         return d
     
-    def save_settings(self, sender, args):
+    def save_settings(self):
         try :
             user_config.add_section('libfile')
         except Exception as e:
