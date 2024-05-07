@@ -48,7 +48,7 @@ class T_settings(forms.WPFWindow):
         self.save_settings()
     
     def compute_libfile_path(self):
-        print('compute_libfile_path')
+        # print('compute_libfile_path')
         if not self.libfile_path.Text:
             forms.alert('Please select a folder for the library file.', exitscript=True)
         else : 
