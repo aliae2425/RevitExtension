@@ -38,13 +38,16 @@ class librairie(forms.Reactive):
         print(self.directorys)
 
     def init_data(self, data, current, row = 0):
+        if row > 1:
+            return
+        else:
             if data["type"] == "directory":
                 print("{}📂 -{}- : {}".format("_"*row, current.title, data["name"]))
                 fold = folder(data["name"])
                 for i in data["children"]:
                     current.child.append(self.init_data(i, fold, row + 1))
             else:
-                if data["name"].endswith(".rfa"):
+                if data["name"].endswith(".rfa") or data["name"].endswith(".rvt"):
                     print("{}📄 -{}- : {}".format("_"*row, current.title, data["name"]))    
                     familly = item(data["name"])
                     current.item.append(familly)
@@ -59,7 +62,8 @@ class folder(forms.Reactive):
             self.item = []
         
         def __repr__(self):
-            return "📂 {} : \n _ {} sous dossiers \n _ {} fichier".format(self.title, len(self.child), len(self.item))
+            return "📂 {} : \n _ {} sous dossiers \n _ {} fichier"\
+                .format(self.title, len(self.child), len(self.item))
         
         @forms.reactive
         def title(self):
