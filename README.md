@@ -19,6 +19,14 @@ streamlining my workflow. Automate tasks, boost efficiency, reduce errors and mi
 | FamilyBrowser | create a family browser base on shared files | in progress 
 | documentation | documentation for the related template | to do
 
+## Installation
+
+- download the code as zip
+- extract fails in %appdata%
+- in pyrevit settings : custom addin
+- add the folder
+- save and reload 
+
 
 ## Feedback
 
