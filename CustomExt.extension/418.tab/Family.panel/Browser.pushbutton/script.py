@@ -31,29 +31,39 @@ class librairie(forms.Reactive):
         path_file = os.path.join(path_folder, 'libfile.json')
         with open(path_file) as f:
             data = json.load(f)
-        self.init_data(data, self.directorys)
-        print(len(data["children"]))
-        print(len(self.directorys.child))
-        print(len(self.directorys.item))
+        for i in data["children"]:
+            self.init_data(i, self.directorys)
         print(self.directorys)
+        
+        print("_"*50)
+        for i in self.directorys.get_child():
+            print(i.title)
+        print("_"*50)   
+        for i in self.directorys.get_item():
+            print(i.title)
 
     def init_data(self, data, current, row = 0):
-        if row > 1:
-            return
+        j = 0
+        underfold = []
+        if data["type"] == "directory":
+            # if not data["name"] in [i.title for i in current.get_child()]:
+            print("{}📂 -{}- : {}".format("_"*row, current.title, data["name"]))
+            fold = folder(data["name"])
+            underfold = [i for i in data["children"] if i["type"] == "directory"]
+            for i in underfold:
+                # print("--- {} : {}".format(i["name"], i["type"]))
+                current.child.append(self.init_data(i, fold, row + 1))
         else:
-            if data["type"] == "directory":
-                print("{}📂 -{}- : {}".format("_"*row, current.title, data["name"]))
-                fold = folder(data["name"])
-                for i in data["children"]:
-                    current.child.append(self.init_data(i, fold, row + 1))
-            else:
-                if data["name"].endswith(".rfa") or data["name"].endswith(".rvt"):
-                    print("{}📄 -{}- : {}".format("_"*row, current.title, data["name"]))    
-                    familly = item(data["name"])
-                    current.item.append(familly)
+            if data["name"].endswith(".rfa"):
+            # if data["name"].endswith(".rfa") or data["name"].endswith(".rvt"):
+                # print("{}📄 -{}- : {}".format("_"*row, current.title, data["name"]))    
+                familly = item(data["name"])
+                current.item.append(familly)
+                j+=1
+        print("total : {} | subfolder : {} | item : {}".format( len(data), len(underfold), j))    
+        return current
 
 
-    
 class folder(forms.Reactive):
         
         def __init__(self, title = "folder"):
@@ -62,8 +72,16 @@ class folder(forms.Reactive):
             self.item = []
         
         def __repr__(self):
+            # return "📂 {} : \n _ {} sous dossiers \n _ {} fichier"\
+            #     .format(self.title, self.child, self.item)
             return "📂 {} : \n _ {} sous dossiers \n _ {} fichier"\
                 .format(self.title, len(self.child), len(self.item))
+        
+        def get_child(self):
+            return self.child
+        
+        def get_item(self):
+            return self.item
         
         @forms.reactive
         def title(self):

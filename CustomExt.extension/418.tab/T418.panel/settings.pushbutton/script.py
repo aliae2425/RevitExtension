@@ -54,8 +54,12 @@ class T_settings(forms.WPFWindow):
         else : 
             path = os.path.join(self.libfile_path.Text, 'libfile.json')
             if os.path.exists(path):
+                # forms.alert('The library file already exists in the selected folder.\n {}'.format(path), exitscript=True)
+                pass
+            else:
                 with io.open(path, 'w', encoding='utf8') as f:
                     json.dump(self.path_to_dict(path=self.libfile_path.Text), f, ensure_ascii=False)
+                forms.alert('The library file has been created in the selected folder.', exitscript=True)
 
         
     def path_to_dict(self, path):
