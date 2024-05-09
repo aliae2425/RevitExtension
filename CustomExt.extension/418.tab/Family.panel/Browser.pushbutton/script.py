@@ -37,13 +37,14 @@ class librairie(forms.Reactive):
 
     def init_data(self, data, current, row = 0):
         if data["type"] == "directory":
-            print("{}📂 -{}- : {}".format("_"*row, current.title, data["name"]))
+            print("{}📂: {}".format("_"*row, data["name"]))
             fold = folder(data["name"])
             current.child.append(fold)
             fold.child = [self.init_data(x, fold, row+1) for x in data["children"] if x["type"] == "directory"]
+            # fold.child = [self.init_data(x, fold, row+1) for x in data["children"]]
         else:
             if data["name"].endswith(".rfa"):
-                print("{}📄 -{}- : {}".format("_"*row, current.title, data["name"]))    
+                print("{}📄: {}".format("_"*row, data["name"]))    
                 familly = item(data["name"])
                 current.item.append(familly)
         return current
