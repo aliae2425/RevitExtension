@@ -33,7 +33,7 @@ class librairie(forms.Reactive):
             data = json.load(f)
         for i in data["children"]:
             self.init_data(i, self.directorys)
-        print(self.directorys)
+        return self.directorys
 
     def init_data(self, data, current, row = 0):
         if data["type"] == "directory":
@@ -111,4 +111,6 @@ class Myform(framework.Windows.Window):
    
 
 lib = librairie()
+for i in lib.directorys.child:
+    print(i.title, len(i.child), len(i.item))
 # Myform('Browser.xaml').ShowDialog()
