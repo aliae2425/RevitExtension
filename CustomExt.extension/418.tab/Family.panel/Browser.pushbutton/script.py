@@ -34,33 +34,18 @@ class librairie(forms.Reactive):
         for i in data["children"]:
             self.init_data(i, self.directorys)
         print(self.directorys)
-        
-        print("_"*50)
-        for i in self.directorys.get_child():
-            print(i.title)
-        print("_"*50)   
-        for i in self.directorys.get_item():
-            print(i.title)
 
     def init_data(self, data, current, row = 0):
-        j = 0
-        underfold = []
         if data["type"] == "directory":
-            # if not data["name"] in [i.title for i in current.get_child()]:
             print("{}📂 -{}- : {}".format("_"*row, current.title, data["name"]))
             fold = folder(data["name"])
-            underfold = [i for i in data["children"] if i["type"] == "directory"]
-            for i in underfold:
-                # print("--- {} : {}".format(i["name"], i["type"]))
-                current.child.append(self.init_data(i, fold, row + 1))
+            current.child.append(fold)
+            fold.child = [self.init_data(x, fold, row+1) for x in data["children"] if x["type"] == "directory"]
         else:
             if data["name"].endswith(".rfa"):
-            # if data["name"].endswith(".rfa") or data["name"].endswith(".rvt"):
-                # print("{}📄 -{}- : {}".format("_"*row, current.title, data["name"]))    
+                print("{}📄 -{}- : {}".format("_"*row, current.title, data["name"]))    
                 familly = item(data["name"])
                 current.item.append(familly)
-                j+=1
-        print("total : {} | subfolder : {} | item : {}".format( len(data), len(underfold), j))    
         return current
 
 
