@@ -40,7 +40,6 @@ class librairie(forms.Reactive):
             print("{}📂: {}".format("_"*row, data["name"]))
             fold = folder(data["name"])
             current.child.append(fold)
-            # fold.child = [self.init_data(x, fold, row+1) for x in data["children"] if x["type"] == "directory"]
             fold.child = [self.init_data(x, fold, row+1) for x in data["children"]]
         else:
             if data["name"].endswith(".rfa"):
@@ -109,7 +108,6 @@ class Myform(framework.Windows.Window):
 
    
 
-lib = librairie()
-for i in lib.directorys.child:
-    print(i.title, len(i.child), len(i.item))
+lib = librairie().directorys
+print(lib.title, lib.child)
 # Myform('Browser.xaml').ShowDialog()
