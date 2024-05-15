@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from hashlib import sha256
 import os,io
 import clr
 import json
-import subprocess
+import sqlite3
 
 from pyrevit.userconfig import user_config
 from pyrevit.forms import WPFWindow
@@ -34,35 +35,11 @@ class T_settings(forms.WPFWindow):
             self.libfile_path.Text = user_config.libfile.get_option('path', '')
         except:
             self.libfile_path.Text = ''
-            
-    def pick_libfile_path(self, sender, args):
-        """Callback method for picking destination folder for telemetry files"""
-        new_path = forms.pick_folder(owner=self)
-        if new_path:
-            self.libfile_path.Text = os.path.normpath(new_path)
-        self.save_settings()
-        self.compute_libfile_path()
-    
-    def reset_libfile_path(self, sender, args):
-        self.libfile_path.Text = ''
-        self.save_settings()
-    
-    def compute_libfile_path(self):
-        # print('compute_libfile_path')
-        if not self.libfile_path.Text:
-            forms.alert('Please select a folder for the library file.', exitscript=True)
-        else : 
-            path = os.path.join(self.libfile_path.Text, 'libfile.json')
-            if os.path.exists(path):
-                # forms.alert('The library file already exists in the selected folder.\n {}'.format(path), exitscript=True)
-                pass
-            else:
-                with io.open(path, 'w', encoding='utf8') as f:
-                    json.dump(self.path_to_dict(path=self.libfile_path.Text), f, ensure_ascii=False)
-                forms.alert('The library file has been created in the selected folder.', exitscript=True)
-
         
-    def path_to_dict(self, path):
+        database = os.path.join(self.libfile_path.Text, 'Data.db')
+        self.create_sqlite_database(database)
+    
+    def firstcommit(self, path):
         d = {'name': os.path.basename(path)}
         if os.path.isdir(path):
             d['type'] = "directory"
@@ -70,7 +47,44 @@ class T_settings(forms.WPFWindow):
         else:
             d['type'] = "file"
         return d
+
     
+    def create_sqlite_database(self, filename):
+        """ create a database connection to an SQLite database """
+        conn = None
+        try:
+            conn = sqlite3.connect(filename)
+            self.init_database(filename)
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if conn:
+                conn.close()
+
+    def init_database(self, filename):
+        structure = os.path.join(self.get_lib(), 'database.sql')
+        with open(structure, 'r') as f:
+            sql = f.read()
+        con = sqlite3.connect(filename)
+        cur = con.cursor()
+        cur.executescript(sql)
+        con.commit()
+        con.close()
+
+    def get_lib(self):
+        return os.path.normpath(os.path.join(__file__, '../../../../lib/'))
+
+    def pick_libfile_path(self, sender, args):
+        """Callback method for picking destination folder for telemetry files"""
+        new_path = forms.pick_folder(owner=self)
+        if new_path:
+            self.libfile_path.Text = os.path.normpath(new_path)
+        self.save_settings()
+    
+    def reset_libfile_path(self, sender, args):
+        self.libfile_path.Text = ''
+        self.save_settings()
+
     def save_settings(self):
         try :
             user_config.add_section('libfile')

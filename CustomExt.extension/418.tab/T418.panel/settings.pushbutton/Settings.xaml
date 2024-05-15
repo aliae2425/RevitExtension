@@ -15,40 +15,62 @@
             <RowDefinition Height="50"/>
           </Grid.RowDefinitions>
       
-
+          <!-- <Rectangle Grid.Row="0" Fill="#73B2F5"/>
+          <Rectangle Grid.Row="1" Fill="#FFD773F5"/>
+          <Rectangle Grid.Row="2" Fill="#FF73F584"/>
+          <Rectangle Grid.Row="3" Fill="#FFF57373"/> -->
+          
           <StackPanel Grid.Row="0" Orientation="Horizontal">
             <Image x:Name="logo" Grid.Row="0" Source="Settings.png" Height="50" Width="50" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,5,0"/>
             <TextBlock Grid.Row="0" Text="Settings" FontSize="30" FontWeight="Bold"  Margin="0,5,0,0"   />
           </StackPanel>
-
+          
           <Separator Grid.Row="1" Margin="0,10,0,10" />
-
-          <Grid Grid.Row="1">
+          
+          <Grid Grid.Row="2">
             <Grid.RowDefinitions>
-
+              <RowDefinition Height="85"/>
+              <RowDefinition Height="85"/>
             </Grid.RowDefinitions>
-              <DockPanel Grid.Row="2" Margin="0,10,0,0">
-                <TextBlock DockPanel.Dock="top" VerticalAlignment="Center" Text="Browser : Chemin d'acces à la racine de la bibliotheque" />
-                <WrapPanel DockPanel.Dock="Right" Margin="0,10,0,0">
-                    <Button Content="📁"
-                            Width="48" Height="24" Margin="6,0,3,0" Padding="0,0,0,2"
-                            Click="pick_libfile_path" ToolTip="choisir le chemin d'acces"/>
-                    <Button Click="reset_libfile_path" Content="❌" 
-                            Width="48" Height="24" Margin="6,0,3,0" Padding="0,0,0,2"
-                            ToolTip="reset le chemin d'acces"/>
-                    <!-- <Button Click="compute_libfile_path" Content="🧾" 
-                            Width="48" Height="24" Margin="6,0,3,0" Padding="0,0,0,2"
-                            ToolTip="créer la librairie"/> -->
+            
+            <!-- <Rectangle Grid.Row="0" Fill="#FFC2EC27"/>
+            <Rectangle Grid.Row="1" Fill="#FFFA0000"/> -->
+            
+            <DockPanel Grid.Row="1" Margin="0,10,0,0">
+              <TextBlock DockPanel.Dock="top" VerticalAlignment="Center"  Margin="10,0,0,0"
+                 Text="Browser : Chemin d'acces à la racine de la bibliotheque" />
+              <WrapPanel VerticalAlignment="Center" DockPanel.Dock="Right" Margin="0,10,0,0">
+                <Button Content="📁"
+                        Width="48" Height="24" Margin="6,0,3,0" Padding="0,0,0,2"
+                        Click="pick_libfile_path" ToolTip="choisir le chemin d'acces"/>
+                <Button Click="reset_libfile_path" Content="❌" 
+                        Width="48" Height="24" Margin="6,0,3,0" Padding="0,0,0,2"
+                        ToolTip="reset le chemin d'acces"/>
+              </WrapPanel>
+              <TextBox x:Name="libfile_path" FontFamily="Consolas"
+                        Margin="0,10,0,0" Height="24" Padding="5,0,0,0"
+                        VerticalContentAlignment="Center"/>
+            </DockPanel>
+
+              <DockPanel Grid.Row="0" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <WrapPanel>
+                  <TextBlock Text="Username : " VerticalAlignment="Center" Margin="10,0,0,0"/>
+                  <TextBox x:Name="username" FontFamily="Consolas" Height="24" Width="120" Padding="5,0,0,0"
+                  VerticalContentAlignment="Center"/>
+                  <TextBlock Text="Password : " VerticalAlignment="Center" Margin="20,0,0,0"/>
+                  <TextBox x:Name="Password" FontFamily="Consolas" Height="24" Width="120" Padding="5,0,0,0"
+                  VerticalContentAlignment="Center"/>
+                  <Button Content="Login" Margin="10"
+                          Width="70" Height="24" Padding="0,0,0,2"/>
+                  <Button Content="logout" Margin="5"
+                          Width="70" Height="24" Padding="0,0,0,2"/>
                 </WrapPanel>
-                <TextBox x:Name="libfile_path" FontFamily="Consolas"
-                         Margin="0,10,0,0" Height="24" Padding="5,0,0,0"
-                         VerticalContentAlignment="Center"/>
               </DockPanel>
           </Grid>
 
 
           
-          <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" >
+          <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" >
             <Button Content="Fermer" Width="100" Height="30" Margin="10"  Click="close_settings"/>
           </StackPanel>
         </Grid>
