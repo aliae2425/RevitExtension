@@ -1,0 +1,6 @@
+-- SQLite
+CREATE TABLE IF NOT EXISTS USER(
+    username TEXT NOT NULL PRIMARY KEY,
+    password TEXT NOT NULL
+    );
+
