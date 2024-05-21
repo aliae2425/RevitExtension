@@ -17,7 +17,6 @@ clr.AddReference('System.Windows.Forms')
 clr.AddReference('IronPython.Wpf')
 
 
-
 class Myform(framework.Windows.Window):
 
     def set_image_source(self, wpf_element, image_file):
