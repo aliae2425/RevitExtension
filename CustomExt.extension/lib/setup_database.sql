@@ -1,6 +1,6 @@
 -- DROP TABLE IF EXISTS User;
 -- DROP TABLE IF EXISTS Folder;
--- DROP TABLE IF EXISTS Item;
+-- DROP TABLE IF EXISTS Familly;
 -- DROP TABLE IF EXISTS tag;
 -- DROP TABLE IF EXISTS Favoris;
 -- DROP TABLE IF EXISTS ItemTag;
@@ -25,30 +25,28 @@ CREATE TABLE IF NOT EXISTS Folder (
     FOREIGN KEY (parent_id) REFERENCES Folder(id)
     );
 
-CREATE TABLE IF NOT EXISTS Item (
+CREATE TABLE IF NOT EXISTS Familly (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    -- info sur le model
     name varchar(150) NOT NULL UNIQUE,
+    create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     url varchar(150) UNIQUE,
     description TEXT,
-    -- info sur l'auteur
-    _autor_id INTEGER,
-    _lastupdate_by INTEGER,
-    _create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    _lastup_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (_autor_id) REFERENCES User(id),
-    FOREIGN KEY (_lastupdate_by) REFERENCES User(id),
-    -- info sur le vote
-    sum_vote INTEGER,
-    nb_vote INTEGER,
-    -- Data base item  
-    folder_id INTEGER,
-    FOREIGN KEY (folder_id) REFERENCES Folder(id)
+    sum_vote INTEGER DEFAULT 0,
+    nb_vote INTEGER DEFAULT 0,
+    Folder_id INTEGER,
+    FOREIGN KEY (Folder_id) REFERENCES Folder(id)
     );
+
 
 CREATE TABLE IF NOT EXISTS Projet (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title varchar(150) NOT NULL UNIQUE
+    );
+
+CREATE TABLE IF NOT EXISTS Tag (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name varchar(150) NOT NULL UNIQUE
     );
 
 CREATE TABLE IF NOT EXISTS Feedback (
@@ -62,13 +60,9 @@ CREATE TABLE IF NOT EXISTS Feedback (
     FOREIGN KEY (responce_to) REFERENCES Feedback(id)
     );
 
-CREATE TABLE IF NOT EXISTS Tag (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name varchar(150) NOT NULL UNIQUE
-    );
 
 
--- table de relation
+-- -- table de relation
 CREATE TABLE IF NOT EXISTS Favoris (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
