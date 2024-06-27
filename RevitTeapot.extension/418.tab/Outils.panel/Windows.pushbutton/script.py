@@ -16,6 +16,7 @@ __max_revit_ver__ = 2025
 from Autodesk.Revit.DB import *
 from pyrevit import forms, revit, DB
 from collections import defaultdict
+from RevitTeapotLib import selection
 
 
 activ_document   = __revit__.ActiveUIDocument.Document
@@ -149,6 +150,7 @@ class MiseEnPage:
 
 def getAllElement(category):
     return FilteredElementCollector(doc).OfCategory(category).WhereElementIsNotElementType().ToElements()
+
 def FormSelector():
     ops = ["Porte", "Fenetre"]
     floorPlantype = {"Porte": BuiltInCategory.OST_Doors, "Fenetre": BuiltInCategory.OST_Windows}
@@ -161,39 +163,42 @@ def SheetTypeSelector():
 
 
 if __name__ == "__main__":
+    
    
     mainDict = {}
     # -------------------------- filter element on wall -------------------------- #
     for i in getAllElement(FormSelector()):
-       key = "{}-{}".format(i.Symbol.Family.Name, Element.Name.GetValue(i.Symbol))
-       if type(i.Host) == Wall:
-           mainDict[key] = i
-       else:
-           print("❌ L'element {} n'est pas sur un mur ({})".format(key, i.Id))
+        key = "{}-{}".format(i.Symbol.Family.Name, Element.Name.GetValue(i.Symbol))
+        if type(i.Host) == Wall:
+            mainDict[key] = i
+        else:
+            print("❌ L'element {} n'est pas sur un mur ({})".format(key, i.Id))
+
+    selection.PrintSelection()
     
-    # ------------------------- detailler les Menuiserie ------------------------- #
-    with revit.Transaction(doc=pyDoc, name="detailer les elements"):
-        for key, item in mainDict.items():
-            try : 
-                print("🔧 Detailer l'element : {}".format(key))
-                Menuiserie(item).details()
-            except Exception as e:
-                print("❌ Erreur lors de la création des vue de details : {}".format(e))
+    # # ------------------------- detailler les Menuiserie ------------------------- #
+    # with revit.Transaction(doc=pyDoc, name="detailer les elements"):
+    #     for key, item in mainDict.items():
+    #         try : 
+    #             print("🔧 Detailer l'element : {}".format(key))
+    #             Menuiserie(item).details()
+    #         except Exception as e:
+    #             print("❌ Erreur lors de la création des vue de details : {}".format(e))
     
-    # ------------------------- mise en page des vues ------------------------- #
-    allViews = [view for view in FilteredElementCollector(doc).OfClass(View).WhereElementIsNotElementType().ToElements() if view.Name.startswith("418_D")]
-    dictView = defaultdict(dict)
+    # # ------------------------- mise en page des vues ------------------------- #
+    # allViews = [view for view in FilteredElementCollector(doc).OfClass(View).WhereElementIsNotElementType().ToElements() if view.Name.startswith("418_D")]
+    # dictView = defaultdict(dict)
     
-    for view in allViews:
-        try:
-            name = view.Name.replace("418_", "").split(" (")[0]
-            viewType = view.Name.split(" (")[1].split(")")[0]
-            dictView[name][viewType] = view
-        except Exception as e:
-            print("❌ Erreur lors de la recuperation des vues : {}".format(e))
+    # for view in allViews:
+    #     try:
+    #         name = view.Name.replace("418_", "").split(" (")[0]
+    #         viewType = view.Name.split(" (")[1].split(")")[0]
+    #         dictView[name][viewType] = view
+    #     except Exception as e:
+    #         print("❌ Erreur lors de la recuperation des vues : {}".format(e))
     
-    with revit.Transaction(doc=pyDoc, name="Mise en page des vues"):  
-        i = 0 
-        for item in dictView:
-            MiseEnPage(item, dictView[item]).createSheet(i)
-            i+=1
+    # with revit.Transaction(doc=pyDoc, name="Mise en page des vues"):  
+    #     i = 0 
+    #     for item in dictView:
+    #         MiseEnPage(item, dictView[item]).createSheet(i)
+    #         i+=1
