@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 # ------------------------------- info pyrevit ------------------------------- #
-__title__ = "Detailer les fenetres"
+__title__ = "PokeMEX"
 __doc__ = """
-    version : 0.0.1
+    version : 0.1.2
     Date : 03.03.2024
     __________________
     un bouton pour les detailer toutes 
@@ -16,7 +16,8 @@ __max_revit_ver__ = 2025
 from Autodesk.Revit.DB import *
 from pyrevit import forms, revit, DB
 from collections import defaultdict
-from RevitTeapotLib import selection
+
+from RevitTeapotLib import select
 
 
 activ_document   = __revit__.ActiveUIDocument.Document
@@ -174,7 +175,7 @@ if __name__ == "__main__":
         else:
             print("❌ L'element {} n'est pas sur un mur ({})".format(key, i.Id))
 
-    selection.PrintSelection()
+    select.PrintSelection()
     
     # # ------------------------- detailler les Menuiserie ------------------------- #
     # with revit.Transaction(doc=pyDoc, name="detailer les elements"):
