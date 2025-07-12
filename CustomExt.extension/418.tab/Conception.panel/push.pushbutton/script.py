@@ -127,9 +127,8 @@ def create_stair_escape_volume():
             riser_height = 0.583  # 17.8cm en pieds
             tread_depth = 0.958  # 29.2cm en pieds
         
-        # Calculer les dimensions du volume englobant
-        min_point = bbox.Min
-        max_point = bbox.Max
+        # Récupérer la géométrie réelle de l'escalier
+        stair_geometry = stair.get_Geometry(DB.Options())
         
         # Ajouter une marge de sécurité (20cm de chaque côté horizontalement)
         margin = 0.65617  # 20cm en pieds
@@ -137,26 +136,75 @@ def create_stair_escape_volume():
         # Hauteur d'échappée : 2m au-dessus de chaque marche
         escape_height = 6.56168  # 2m en pieds
         
-        # Calculer le nombre de marches approximatif
-        total_height = max_point.Z - min_point.Z
-        num_risers = int(total_height / riser_height) if riser_height > 0 else 10
+        # Analyser la géométrie réelle de l'escalier pour extraire les marches
+        step_profiles = []
         
-        # Déterminer la direction principale de l'escalier
-        width = max_point.X - min_point.X
-        depth = max_point.Y - min_point.Y
-        is_horizontal = width > depth  # True si l'escalier va dans la direction X
+        try:
+            # Parcourir la géométrie de l'escalier
+            for geom_obj in stair_geometry:
+                if isinstance(geom_obj, DB.GeometryInstance):
+                    # Géométrie d'instance (escalier assemblé)
+                    instance_geom = geom_obj.GetInstanceGeometry()
+                    for instance_obj in instance_geom:
+                        if isinstance(instance_obj, DB.Solid) and instance_obj.Volume > 0:
+                            # Analyser chaque solide pour trouver les surfaces horizontales (marches)
+                            faces = instance_obj.Faces
+                            for face in faces:
+                                if isinstance(face, DB.PlanarFace):
+                                    # Vérifier si c'est une surface horizontale (marche)
+                                    normal = face.FaceNormal
+                                    if abs(normal.Z) > 0.9:  # Surface quasi-horizontale
+                                        # Récupérer le contour de la marche
+                                        edge_array = face.GetEdgesAsCurveLoops()
+                                        for curve_loop in edge_array:
+                                            if curve_loop.NumberOfCurves() >= 3:  # Contour valide
+                                                # Calculer la hauteur Z de cette marche
+                                                step_z = None
+                                                for curve in curve_loop:
+                                                    start_point = curve.GetEndPoint(0)
+                                                    if step_z is None or start_point.Z > step_z:
+                                                        step_z = start_point.Z
+                                                
+                                                step_profiles.append({
+                                                    'curve_loop': curve_loop,
+                                                    'z_level': step_z,
+                                                    'normal': normal
+                                                })
+                
+                elif isinstance(geom_obj, DB.Solid) and geom_obj.Volume > 0:
+                    # Solide direct
+                    faces = geom_obj.Faces
+                    for face in faces:
+                        if isinstance(face, DB.PlanarFace):
+                            normal = face.FaceNormal
+                            if abs(normal.Z) > 0.9:  # Surface quasi-horizontale
+                                edge_array = face.GetEdgesAsCurveLoops()
+                                for curve_loop in edge_array:
+                                    if curve_loop.NumberOfCurves() >= 3:
+                                        step_z = None
+                                        for curve in curve_loop:
+                                            start_point = curve.GetEndPoint(0)
+                                            if step_z is None or start_point.Z > step_z:
+                                                step_z = start_point.Z
+                                        
+                                        step_profiles.append({
+                                            'curve_loop': curve_loop,
+                                            'z_level': step_z,
+                                            'normal': normal
+                                        })
         
-        # Points ajustés avec marge horizontale
-        adjusted_min = DB.XYZ(
-            min_point.X - margin,
-            min_point.Y - margin,
-            min_point.Z
-        )
-        adjusted_max = DB.XYZ(
-            max_point.X + margin,
-            max_point.Y + margin,
-            max_point.Z + escape_height
-        )
+        except Exception:
+            # En cas d'erreur dans l'analyse géométrique
+            pass
+        
+        # Trier les profils par hauteur Z (de bas en haut)
+        step_profiles.sort(key=lambda x: x['z_level'])
+        
+        # Filtrer pour ne garder que les surfaces du dessus (marches)
+        filtered_steps = []
+        for step in step_profiles:
+            if step['normal'].Z > 0:  # Surface orientée vers le haut
+                filtered_steps.append(step)
         
         # Début de la transaction
         with revit.Transaction("Créer volume d'échappée escalier"):
@@ -164,58 +212,62 @@ def create_stair_escape_volume():
             # Créer une géométrie composite pour représenter l'échappée
             solids = []
             
-            # Créer des segments de volume pour chaque zone de marche
-            for i in range(num_risers + 1):  # +1 pour inclure le palier final
-                # Calculer la position et hauteur de ce segment
-                if is_horizontal:
-                    # Escalier dans la direction X
-                    segment_length = (adjusted_max.X - adjusted_min.X) / (num_risers + 1)
-                    segment_start_x = adjusted_min.X + (i * segment_length)
-                    segment_end_x = segment_start_x + segment_length
-                    segment_start_y = adjusted_min.Y
-                    segment_end_y = adjusted_max.Y
-                else:
-                    # Escalier dans la direction Y
-                    segment_length = (adjusted_max.Y - adjusted_min.Y) / (num_risers + 1)
-                    segment_start_x = adjusted_min.X
-                    segment_end_x = adjusted_max.X
-                    segment_start_y = adjusted_min.Y + (i * segment_length)
-                    segment_end_y = segment_start_y + segment_length
-                
-                # Hauteur de base de ce segment (suivant la pente de l'escalier)
-                base_height = adjusted_min.Z + (i * riser_height)
-                top_height = base_height + escape_height
-                
-                # Créer les points du rectangle de base pour ce segment
-                segment_points = [
-                    DB.XYZ(segment_start_x, segment_start_y, base_height),
-                    DB.XYZ(segment_end_x, segment_start_y, base_height),
-                    DB.XYZ(segment_end_x, segment_end_y, base_height),
-                    DB.XYZ(segment_start_x, segment_end_y, base_height),
-                    DB.XYZ(segment_start_x, segment_start_y, base_height)  # Fermer le profil
-                ]
-                
-                # Créer les lignes pour le profil rectangulaire de ce segment
-                segment_curve_loop = DB.CurveLoop()
-                for j in range(len(segment_points) - 1):
-                    line = DB.Line.CreateBound(segment_points[j], segment_points[j + 1])
-                    segment_curve_loop.Append(line)
-                
-                # Calculer la hauteur d'extrusion pour ce segment
-                segment_height = top_height - base_height
-                
-                # Créer la géométrie par extrusion pour ce segment
+            # Traiter chaque profil de marche détecté
+            for step in filtered_steps:
                 try:
-                    segment_solid = DB.GeometryCreationUtilities.CreateExtrusionGeometry(
-                        [segment_curve_loop],
+                    # Récupérer le contour de la marche
+                    step_curve_loop = step['curve_loop']
+                    step_z = step['z_level']
+                    
+                    # Créer un contour élargi avec la marge de sécurité
+                    expanded_curves = []
+                    
+                    # Pour chaque courbe du contour, créer une version décalée vers l'extérieur
+                    curves_list = []
+                    for curve in step_curve_loop:
+                        curves_list.append(curve)
+                    
+                    # Créer un rectangle englobant pour cette marche avec marge
+                    # Calculer les limites du profil
+                    min_x = min_y = float('inf')
+                    max_x = max_y = float('-inf')
+                    
+                    for curve in curves_list:
+                        for i in range(2):  # Points de début et fin
+                            point = curve.GetEndPoint(i)
+                            min_x = min(min_x, point.X)
+                            max_x = max(max_x, point.X)
+                            min_y = min(min_y, point.Y)
+                            max_y = max(max_y, point.Y)
+                    
+                    # Créer un rectangle élargi avec marge
+                    expanded_points = [
+                        DB.XYZ(min_x - margin, min_y - margin, step_z),
+                        DB.XYZ(max_x + margin, min_y - margin, step_z),
+                        DB.XYZ(max_x + margin, max_y + margin, step_z),
+                        DB.XYZ(min_x - margin, max_y + margin, step_z),
+                        DB.XYZ(min_x - margin, min_y - margin, step_z)  # Fermer le contour
+                    ]
+                    
+                    # Créer le nouveau contour élargi
+                    expanded_curve_loop = DB.CurveLoop()
+                    for i in range(len(expanded_points) - 1):
+                        line = DB.Line.CreateBound(expanded_points[i], expanded_points[i + 1])
+                        expanded_curve_loop.Append(line)
+                    
+                    # Créer le volume d'échappée au-dessus de cette marche
+                    escape_solid = DB.GeometryCreationUtilities.CreateExtrusionGeometry(
+                        [expanded_curve_loop],
                         DB.XYZ.BasisZ,  # Direction vers le haut
-                        segment_height
+                        escape_height
                     )
-                    solids.append(segment_solid)
-                except:
-                    pass  # Ignorer les segments qui échouent
+                    
+                    solids.append(escape_solid)
+                    
+                except Exception:
+                    continue  # Ignorer cette marche en cas d'erreur
             
-            # Fusionner tous les solides en un seul volume
+            # Fusionner tous les solides en un seul volume ou créer un fallback
             if solids:
                 # Commencer avec le premier solide
                 combined_solid = solids[0]
@@ -238,7 +290,22 @@ def create_stair_escape_volume():
                 direct_shape.ApplicationDataId = "StairEscape_v1.0"
                 direct_shape.SetShape([combined_solid])
             else:
-                # Fallback : créer un volume simple si la méthode avancée échoue
+                # Fallback : créer un volume simple basé sur la bounding box de l'escalier
+                min_point = bbox.Min
+                max_point = bbox.Max
+                
+                # Points ajustés avec marge horizontale
+                adjusted_min = DB.XYZ(
+                    min_point.X - margin,
+                    min_point.Y - margin,
+                    max_point.Z  # Commencer au sommet de l'escalier
+                )
+                adjusted_max = DB.XYZ(
+                    max_point.X + margin,
+                    max_point.Y + margin,
+                    max_point.Z + escape_height
+                )
+                
                 base_points = [
                     DB.XYZ(adjusted_min.X, adjusted_min.Y, adjusted_min.Z),
                     DB.XYZ(adjusted_max.X, adjusted_min.Y, adjusted_min.Z),
@@ -299,10 +366,12 @@ def create_stair_escape_volume():
             except Exception as graphics_error:
                 pass  # Continuer même si la modification graphique échoue
         
-        # Calculer les dimensions en mètres pour l'affichage
-        width_m = (adjusted_max.X - adjusted_min.X) / 3.28084
-        depth_m = (adjusted_max.Y - adjusted_min.Y) / 3.28084
-        total_height_m = (adjusted_max.Z - adjusted_min.Z) / 3.28084
+        # Calculer les dimensions en mètres pour l'affichage (basé sur l'escalier complet)
+        min_point = bbox.Min
+        max_point = bbox.Max
+        width_m = ((max_point.X + margin) - (min_point.X - margin)) / 3.28084
+        depth_m = ((max_point.Y + margin) - (min_point.Y - margin)) / 3.28084
+        total_height_m = (max_point.Z - min_point.Z) / 3.28084
         escape_height_m = escape_height / 3.28084
         
     except Exception as e:
