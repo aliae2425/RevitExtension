@@ -19,7 +19,7 @@ __authors__ = [
     'JLo'
 ]
 __min_revit_ver__ = 2021                                    
-__max_revit_ver__ = 2025                                      
+__max_revit_ver__ = 2026                                      
 __highlight__ = 'updated'
 __beta__ = False
 

@@ -10,7 +10,7 @@ __doc__ = """
 """
 __author__ = 'Aliae'                               
 __min_revit_ver__ = 2022                                       
-__max_revit_ver__ = 2025
+__max_revit_ver__ = 2026
 
 
 from Autodesk.Revit.DB import *
